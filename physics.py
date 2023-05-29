@@ -1,6 +1,6 @@
 
 import pygame
-import level
+from . import level
 
 
 class VerletObject:

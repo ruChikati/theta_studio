@@ -3,7 +3,7 @@ from os import listdir, sep
 
 import pygame
 
-from funcs import clip, read_file, write_file
+from .funcs import clip, read_file, write_file
 
 
 class ForbiddenCharacterError(Exception):

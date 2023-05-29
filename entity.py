@@ -1,7 +1,7 @@
 
 import pygame
 
-import physics
+from . import physics
 
 
 class Entity(physics.VerletObject):

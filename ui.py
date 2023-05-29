@@ -3,8 +3,8 @@ from os import listdir, sep
 
 import pygame
 
-from funcs import read_json
-from input import Event
+from .funcs import read_json
+from .input import Event
 
 
 class UIElement:

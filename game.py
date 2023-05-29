@@ -3,10 +3,10 @@ from time import time
 
 import pygame
 
-import camera
-import input
-import ui
-import physics
+from . import camera
+from . import input
+from . import ui
+from . import physics
 
 
 class Game:

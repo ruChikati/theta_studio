@@ -3,7 +3,7 @@ import os
 
 import pygame
 
-from funcs import normalize
+from .funcs import normalize
 
 
 def _bezier_curve_point(point_list, t, x_or_y):
