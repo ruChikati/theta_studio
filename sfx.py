@@ -1,6 +1,6 @@
 
 import random
-from os import listdir, sep
+import os
 
 import pygame
 
@@ -10,19 +10,19 @@ pygame.mixer.init()
 
 class SFXManager:
 
-    def __init__(self, path=os.path.abspath(f'data{sep}sfx'), num_channels=63):
+    def __init__(self, path=os.path.abspath(f'data{os.sep}sfx'), num_channels=63):
         self.path = path
         self.sounds = {}
         self.music = {}
         self.paused = False
         self.queue = []
-        for file in listdir(f'{self.path}{sep}sounds'):
+        for file in os.listdir(f'{self.path}{os.sep}sounds'):
             if '.' not in file:
-                self.sounds[file] = [pygame.mixer.Sound(f'{self.path}{sep}sounds{sep}{file}{sep}{sound}') for sound in listdir(f'{self.path}{sep}sounds{sep}{file}') if sound[0] != '.']
+                self.sounds[file] = [pygame.mixer.Sound(f'{self.path}{os.sep}sounds{os.sep}{file}{os.sep}{sound}') for sound in os.listdir(f'{self.path}{os.sep}sounds{os.sep}{file}') if sound[0] != '.']
                 # sounds are stored in a directory which is stored in `path`
-        for file in listdir(f'{self.path}{sep}music'):
+        for file in os.listdir(f'{self.path}{os.sep}music'):
             if '.' not in file:
-                self.music[file] = [music for music in listdir(f'{self.path}{sep}music{sep}{file}') if music[0] != '.']
+                self.music[file] = [music for music in os.listdir(f'{self.path}{os.sep}music{os.sep}{file}') if music[0] != '.']
         self.num_channels = num_channels
 
     def play(self, name, loops=0, maxtime=0, fade_ms=0):
@@ -58,7 +58,7 @@ class SFXManager:
             sound.stop()
 
     def new_sound(self, path):
-        self.sounds[path] = [pygame.mixer.Sound(sound) for sound in listdir(path) if sound[0] != '.']
+        self.sounds[path] = [pygame.mixer.Sound(sound) for sound in os.listdir(path) if sound[0] != '.']
 
     def add_queue(self, music):
         self.queue.append(music)
