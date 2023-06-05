@@ -1,5 +1,5 @@
 
-from os import listdir, sep
+import os
 
 import pygame
 
@@ -38,10 +38,10 @@ class Page:
 
 class UIManager:
 
-    def __init__(self, game, path=f'data{sep}ui'):
+    def __init__(self, game, path=os.path.abspath(f'data{os.sep}ui')):
         self.pages = {'': Page([])}
         self.path = path
-        for file in listdir(path):
+        for file in os.listdir(path):
             if file[0] != '.':
                 self.pages[file.split('.')[0]] = Page([UIElement(*f[:-1], Event(game.input.custom_event_type(), *f[-1]), game) for f in read_json(file)])
                 # JSON file contains an array of arrays `f` which specify the arguments of UIElement, the last item of `f` is an array containing all arguments to the Event, except the type

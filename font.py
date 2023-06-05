@@ -1,5 +1,5 @@
 
-from os import listdir, sep
+import os
 
 import pygame
 
@@ -75,21 +75,21 @@ SysFont = pygame.font.SysFont
 
 class FontManager:
 
-    def __init__(self, path=f'data{sep}fonts', bar_colour=(128, 128, 128), colourkey=(0, 0, 0)):
+    def __init__(self, path=os.path.abspath(f'data{os.sep}fonts'), bar_colour=(128, 128, 128), colourkey=(0, 0, 0)):
         self.path = path
         self.fonts = {}
         order = None
-        for file in listdir(path):
+        for file in os.listdir(path):
             if file.split('.')[0] == 'order':
-                order = path + sep + file
+                order = path + os.sep + file
 
         if order is None:
-            write_file(path + sep + 'order', '!-.0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz')
-            order = path + sep + 'order'
+            write_file(path + os.sep + 'order', '!-.0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz')
+            order = path + os.sep + 'order'
 
-        for file in listdir(path):
+        for file in os.listdir(path):
             if file[0] != '.' and file != 'order':
-                self.fonts[file.split('.')[0]] = Font(f'{path}{sep}{file}', order, bar_colour, colourkey)
+                self.fonts[file.split('.')[0]] = Font(f'{path}{os.sep}{file}', order, bar_colour, colourkey)
                 # fonts are stored in a directory alongs with the order `order` in which the chars appear
 
     def __getitem__(self, item):

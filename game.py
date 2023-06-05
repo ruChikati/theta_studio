@@ -3,10 +3,7 @@ from time import time
 
 import pygame
 
-from . import camera
-from . import input
-from . import ui
-from . import physics
+from . import camera, input, physics, ui
 
 
 class Game:
