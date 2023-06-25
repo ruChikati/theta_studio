@@ -31,7 +31,7 @@ class CameraCutscene:
 
 class Camera:
 
-    def __init__(self, w, h, cutscene_path=os.path.abspath(f'data{os.sep}cutscenes'), bg_colour=(0, 0, 0)):
+    def __init__(self, w, h, cutscene_path=f'data{os.sep}cutscenes', bg_colour=(0, 0, 0)):
         self.display = pygame.display.set_mode((w, h), pygame.RESIZABLE)
         self.screen = pygame.Surface((w, h))
         self.scroll = [0, 0]
@@ -42,12 +42,14 @@ class Camera:
         self.zoom = 1.0
         self.current_points = None
 
+        self._the_dirty_rects = []
+
         for file in os.listdir(self.cutscene_path):
             if file[0] != '.':
                 cutscene = CameraCutscene(file)
                 self.cutscenes[cutscene.name] = cutscene
 
-    def update(self):
+    def update(self, full_screen=False):
         if self.current_points is not None:
             try:
                 self.scroll = next(self.current_points)
@@ -57,7 +59,10 @@ class Camera:
         self.display.fill(self.bgc)
         self.screen.fill(self.bgc)
         self.display.blit(self.screen, (0, 0))
-        pygame.display.flip()
+        if full_screen:
+            pygame.display.update()
+        else:
+            pygame.display.update(self._the_dirty_rects)
 
     def play_cutscene(self, name):
         points = self.cutscenes[name].curve
@@ -74,6 +79,9 @@ class Camera:
         self.current_points = iter(return_points)
         self.lock()
         return return_points
+
+    def add_update_rects(self, rects: list[pygame.Rect] | tuple[pygame.Rect]):
+        self._the_dirty_rects.extend(rects)
 
     def render(self, surf, pos):
         self.screen.blit(surf, pos)

@@ -75,7 +75,7 @@ SysFont = pygame.font.SysFont
 
 class FontManager:
 
-    def __init__(self, path=os.path.abspath(f'data{os.sep}fonts'), bar_colour=(128, 128, 128), colourkey=(0, 0, 0)):
+    def __init__(self, path=f'data{os.sep}fonts', bar_colour=(128, 128, 128), colourkey=(0, 0, 0)):
         self.path = path
         self.fonts = {}
         order = None

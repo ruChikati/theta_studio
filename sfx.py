@@ -10,7 +10,7 @@ pygame.mixer.init()
 
 class SFXManager:
 
-    def __init__(self, path=os.path.abspath(f'data{os.sep}sfx'), num_channels=63):
+    def __init__(self, path=f'data{os.sep}sfx', num_channels=63):
         self.path = path
         self.sounds = {}
         self.music = {}

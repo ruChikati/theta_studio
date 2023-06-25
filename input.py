@@ -42,6 +42,9 @@ class Event:
     def __repr__(self):
         return f'Event({TYPENAMES[self.type]}), {self.attr}'
 
+    def __getattr__(self, item):
+        return self.attr[item]
+
 
 class Input:
 

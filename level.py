@@ -10,7 +10,7 @@ CHUNK_SIZE = 16
 
 class Tile:
 
-    def __init__(self, x, y, w, h, name, img_path, is_invisible, is_solid):
+    def __init__(self, x, y, w, h, name, img_path, is_invisible, is_solid, game):
         self.x = x
         self.y = y
         self.w = w
@@ -20,12 +20,17 @@ class Tile:
         self.img = pygame.image.load(f'data{sep}{img_path}').convert()
         self.is_invisible = is_invisible
         self.is_solid = is_solid
+        self.game = game
 
     def __eq__(self, other):
         return (self.x, self.y, self.w, self.h, self.name, self.is_invisible, self.is_solid) == (other.x, other.y, other.w, other.h, other.name, other.is_invisible, other.is_solid)
 
     def update(self, surf=None):
-        pass
+        if surf is not None:
+            surf.blit(self.img)
+        else:
+            self.game.camera.add_update_rects([pygame.Rect(self.x, self.y, self.w, self.h)])
+            self.game.camera.render(self.img)
 
     def collides(self, rect):
         try:
@@ -56,20 +61,21 @@ class Tile:
 
 class Chunk:
 
-    def __init__(self, tile_list):    # pass in list from json file as tile in tile_list
+    def __init__(self, tile_list, game):    # pass in list from json file as tile in tile_list
         self.tiles = []
         self.solid_tiles = []
         self.unsolid_tiles = []
         for tile in tile_list:
-            self.tiles.append(Tile(*tile))
+            self.tiles.append(Tile(*tile, game))
             if tile[7]:
-                self.solid_tiles.append(Tile(*tile))
+                self.solid_tiles.append(Tile(*tile, game))
             else:
-                self.unsolid_tiles.append(Tile(*tile))
+                self.unsolid_tiles.append(Tile(*tile, game))
         self.pos = self.x, self.y = min(tile.x for tile in self.tiles), min(tile.y for tile in self.tiles)
         self.size = CHUNK_SIZE
         self.chunk_pos = self.chunk_x, self.chunk_y = self.x // self.size, self.y // self.size
         self.collision_mesh = self.get_collision_mesh()
+        self.game = game
 
     def __contains__(self, rect):
         if isinstance(rect, Tile):
@@ -94,18 +100,18 @@ class Chunk:
             return False
 
     def update(self, surf=None, tile_type=''):
-        """:type: anything for all tiles, 's' for solid tiles, 'u' for unsolid tiles"""
-        match tile_type:
-            case 's':
+        """:type: '' for all tiles, 's' for solid tiles, 'u' for unsolid tiles, 'i' for invisible tiles, 'v' for visible tiles"""
+        if tile_type == '':
+            for tile in self.tiles:
+                tile.update(surf)
+        if 's' in tile_type:
                 for tile in self.solid_tiles:
-                    tile.update(surf)
-            case 'u':
+                    if (tile.is_invisible and 'i' in tile_type) or (not tile.is_invisible and 'v' in tile_type):
+                        tile.update(surf)
+        if 'u' in tile_type:
                 for tile in self.unsolid_tiles:
-                    tile.update(surf)
-            case _:
-                for tile in self.tiles:
-                    tile.update(surf)
-
+                    if (tile.is_invisible and 'i' in tile_type) or (not tile.is_invisible and 'v' in tile_type):
+                        tile.update(surf)
 
     def get_collision_mesh(self):
         tiles = [tile.rect for tile in self.tiles if tile.is_solid]
@@ -129,14 +135,14 @@ class Chunk:
 
 class Level:
 
-    def __init__(self, chunk_list):
+    def __init__(self, chunk_list, game):
         self.chunks = chunk_list
         for i, chunk in enumerate(self.chunks):
-            self.chunks[i] = Chunk(chunk)
+            self.chunks[i] = Chunk(chunk, game)
         self.chunks_dict = {chunk.chunk_pos: chunk for chunk in self.chunks}
-        print(self.chunks_dict)
         self.chunk_size = CHUNK_SIZE
         self.collision_mesh = self.get_collision_mesh()
+        self.game = game
 
     def get_chunks_at_points(self, points):
         return_list = []
@@ -173,10 +179,11 @@ class Level:
 
 class World:    # TODO: maybe move entities to the chunk level? easier to compute with only chunks
 
-    def __init__(self, name, chunk_list, entities=()):
+    def __init__(self, name, chunk_list, game, entities=()):
         self.name = name
-        self.level = Level(chunk_list)
-        self.entities = entities
+        self.level = Level(chunk_list, game)
+        self.entities = list(entities)
+        self.game = game
 
     def update(self, dt, surf=None, tile_type=0):
         self.level.update(surf, tile_type)
@@ -190,14 +197,15 @@ class World:    # TODO: maybe move entities to the chunk level? easier to comput
 
 class WorldManager:
 
-    def __init__(self, path=f'data{sep}worlds'):
+    def __init__(self, game, path=f'data{sep}worlds'):
         self.path = path
         self.worlds = {}
         for world in listdir(path):
             if not world.startswith('.'):
                 data = read_json(f'{path}{sep}{world}')
-                self.worlds[world.split('.')[0]] = World(world.split('.')[0], data['level']['chunks'], data['entities'])
+                self.worlds[world.split('.')[0]] = World(world.split('.')[0], data['level']['chunks'], game, data['entities'])
         self.active_world = '0'
+        self.game = game
 
     def update(self, dt, surf=None, tile_type=0):
         self.worlds[self.active_world].update(dt, surf, tile_type)

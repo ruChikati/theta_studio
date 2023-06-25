@@ -91,7 +91,7 @@ class Animation:
 
 class AnimationManager:
 
-    def __init__(self, path=os.path.abspath(f'data{os.sep}anims')):
+    def __init__(self, path=f'data{os.sep}anims'):
         self.path = path
         self.anims = {}
         for directory in os.listdir(path):

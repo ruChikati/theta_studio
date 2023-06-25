@@ -28,9 +28,10 @@ class PhysicsSolver:
 
     gravity = pygame.Vector2(0, 10)
 
-    def __init__(self, objects: list[VerletObject] | tuple[VerletObject], lvl: level.Level =None):
+    def __init__(self, objects: list[VerletObject] | tuple[VerletObject], game, lvl: level.Level =None):
         self.objects = objects
-        self.lvl = lvl if lvl is not None else level.Level([])
+        self.lvl = lvl if lvl is not None else level.Level([], game)
+        self.game = game
 
     def add_objects(self, objects: list[VerletObject] | tuple[VerletObject]):
         self.objects.extend(objects)
