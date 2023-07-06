@@ -10,7 +10,7 @@ CHUNK_SIZE = 16
 
 class Tile:
 
-    def __init__(self, x, y, w, h, name, img_path, is_invisible, is_solid, game):
+    def __init__(self, x: int, y: int, w: int, h: int, name: str, img_path: str, is_invisible: bool, is_solid: bool, game):
         self.x = x
         self.y = y
         self.w = w
@@ -32,7 +32,7 @@ class Tile:
             self.game.camera.add_update_rects([pygame.Rect(self.x, self.y, self.w, self.h)])
             self.game.camera.render(self.img)
 
-    def collides(self, rect):
+    def collides(self, rect)  -> bool:
         try:
             return self.rect.colliderect(rect)
         except AttributeError:
@@ -43,7 +43,7 @@ class Tile:
         return [self.x, self.y]
 
     @pos.setter
-    def pos(self, pos):
+    def pos(self, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
         self.x = pos[0]
         self.y = pos[1]
 
@@ -52,7 +52,7 @@ class Tile:
         return pygame.Rect(self.x, self.y, self.w, self.h)
 
     @rect.setter
-    def rect(self, rect):
+    def rect(self, rect: pygame.Rect):
         self.x = rect.x
         self.y = rect.y
         self.w = rect.w
@@ -61,7 +61,7 @@ class Tile:
 
 class Chunk:
 
-    def __init__(self, tile_list, game):    # pass in list from json file as tile in tile_list
+    def __init__(self, tile_list: list | tuple, game):    # pass in list from json file as tile in tile_list
         self.tiles = []
         self.solid_tiles = []
         self.unsolid_tiles = []
@@ -77,12 +77,14 @@ class Chunk:
         self.collision_mesh = self.get_collision_mesh()
         self.game = game
 
-    def __contains__(self, rect):
+    def __contains__(self, rect: Tile | pygame.Rect | tuple[int, int] | list[int, int] | pygame.Vector2):
         if isinstance(rect, Tile):
             return rect in self.tiles
         elif isinstance(rect, pygame.Rect):
             return bool(self.rect.contains(rect))
         elif isinstance(rect, list) or isinstance(rect, tuple):
+            return bool(self.rect.collidepoint(rect))
+        elif isinstance(rect, pygame.Vector2):
             return bool(self.rect.collidepoint(rect))
         else:
             return False
@@ -93,13 +95,13 @@ class Chunk:
         except AttributeError:
             return False
 
-    def is_equal(self, other):
+    def is_equal(self, other) -> bool:
         try:
             return (self.chunk_pos, len(self.tiles), len(self.solid_tiles), len(self.unsolid_tiles)) == (other.chunk_pos, len(other.tiles), len(other.solid_tiles), len(other.unsolid_tiles))
         except AttributeError:
             return False
 
-    def update(self, surf=None, tile_type=''):
+    def update(self, surf: pygame.Surface=None, tile_type=''):
         """:type: '' for all tiles, 's' for solid tiles, 'u' for unsolid tiles, 'i' for invisible tiles, 'v' for visible tiles"""
         if tile_type == '':
             for tile in self.tiles:
@@ -113,7 +115,7 @@ class Chunk:
                     if (tile.is_invisible and 'i' in tile_type) or (not tile.is_invisible and 'v' in tile_type):
                         tile.update(surf)
 
-    def get_collision_mesh(self):
+    def get_collision_mesh(self) -> list[pygame.Rect]:
         tiles = [tile.rect for tile in self.tiles if tile.is_solid]
         for i in range(len(tiles) // 20):   # to reduce runtime divide by a number, since most of the passes will likely be completed by then; 20 seems to fit, recursion is slower since it is O(n^2)
             for tile1 in tiles:
@@ -144,7 +146,7 @@ class Level:
         self.collision_mesh = self.get_collision_mesh()
         self.game = game
 
-    def get_chunks_at_points(self, points):
+    def get_chunks_at_points(self, points) -> list[Chunk]:
         return_list = []
         for point in points:
             try:
@@ -153,14 +155,14 @@ class Level:
                 pass
         return return_list
 
-    def get_all_tiles(self):
+    def get_all_tiles(self) -> list[Tile]:
         return_list = []
         for chunk in self.chunks:
             for tile in chunk.tiles:
                 return_list.append(tile)
         return return_list
 
-    def get_collision_mesh(self, points=()):
+    def get_collision_mesh(self, points=()) -> list[Tile]:
         return_list = []
         if not points:
             for chunk in self.chunks:
@@ -179,19 +181,19 @@ class Level:
 
 class World:    # TODO: maybe move entities to the chunk level? easier to compute with only chunks
 
-    def __init__(self, name, chunk_list, game, entities=()):
+    def __init__(self, name: str, chunk_list, game, entities=()):
         self.name = name
         self.level = Level(chunk_list, game)
         self.entities = list(entities)
         self.game = game
 
-    def update(self, dt, surf=None, tile_type=0):
+    def update(self, dt: float, surf=None, tile_type=0):
         self.level.update(surf, tile_type)
         for entity in self.entities:
             if entity.is_active:
                 entity.update(surf, dt)
 
-    def get_chunks_at_points(self, points):
+    def get_chunks_at_points(self, points) -> list[Chunk]:
         return self.level.get_chunks_at_points(points)
 
 
@@ -207,8 +209,8 @@ class WorldManager:
         self.active_world = '0'
         self.game = game
 
-    def update(self, dt, surf=None, tile_type=0):
+    def update(self, dt: float, surf=None, tile_type=0):
         self.worlds[self.active_world].update(dt, surf, tile_type)
 
-    def get_active_world(self):
+    def get_active_world(self) -> World:
         return self.worlds[self.active_world]

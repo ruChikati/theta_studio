@@ -41,7 +41,7 @@ class Font:
         self.chars = {char: img for char, img in zip(self.order, self.imgs)}
         self.chars[' '] = pygame.Surface((5, self.fnt_img.get_height()))
 
-    def __getitem__(self, text: str):
+    def __getitem__(self, text: str) -> pygame.Surface:
         num_lines = 1
         if not isinstance(text, str):
             text = str(text)
@@ -92,5 +92,5 @@ class FontManager:
                 self.fonts[file.split('.')[0]] = Font(f'{path}{os.sep}{file}', order, bar_colour, colourkey)
                 # fonts are stored in a directory alongs with the order `order` in which the chars appear
 
-    def __getitem__(self, item):
+    def __getitem__(self, item) -> Font:
         return self.fonts[item]

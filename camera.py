@@ -6,7 +6,7 @@ import pygame
 from .funcs import normalize
 
 
-def _bezier_curve_point(point_list, t, x_or_y):
+def _bezier_curve_point(point_list, t: float, x_or_y: 0 | 1):
     if len(point_list) == 1:
         return point_list[0][x_or_y]
     return round(_bezier_curve_point(point_list[:-1], t, x_or_y) * (1 - t) + _bezier_curve_point(point_list[1:], t, x_or_y) * t, 5)
@@ -21,7 +21,7 @@ def bezier_curve(def_points, speed=0.01):
 
 class CameraCutscene:
 
-    def __init__(self, path):
+    def __init__(self, path: str):
         self.path = path
         self.name = path.split(os.sep)[-1].split('.')[0]
         with open(self.path, 'r') as data:
@@ -31,7 +31,7 @@ class CameraCutscene:
 
 class Camera:
 
-    def __init__(self, w, h, cutscene_path=f'data{os.sep}cutscenes', bg_colour=(0, 0, 0)):
+    def __init__(self, w: int, h: int, cutscene_path=f'data{os.sep}cutscenes', bg_colour=(0, 0, 0)):
         self.display = pygame.display.set_mode((w, h), pygame.RESIZABLE)
         self.screen = pygame.Surface((w, h))
         self.scroll = [0, 0]
@@ -64,7 +64,7 @@ class Camera:
         else:
             pygame.display.update(self._the_dirty_rects)
 
-    def play_cutscene(self, name):
+    def play_cutscene(self, name: str) -> list[list[int, int]]:
         points = self.cutscenes[name].curve
         for i, point in enumerate(points):
             points[i] = [normalize(points[0][0], point[0]), normalize(points[0][1], point[1])]
@@ -83,24 +83,24 @@ class Camera:
     def add_update_rects(self, rects: list[pygame.Rect] | tuple[pygame.Rect]):
         self._the_dirty_rects.extend(rects)
 
-    def render(self, surf, pos):
+    def render(self, surf: pygame.Surface, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
         self.screen.blit(surf, pos)
 
-    def zoom(self, flt):
+    def zoom(self, flt: float):
         if not self._locked:
             if not (flt < 0 and self.zoom <= .1):
                 self.zoom += flt
 
-    def move_by(self, pos):
+    def move_by(self, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
         if not self._locked:
             self.scroll[0] += pos[0]
             self.scroll[1] += pos[1]
 
-    def move_to(self, pos):
+    def move_to(self, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
         if not self._locked:
             self.scroll = pos[:2]
 
-    def center(self, pos):
+    def center(self, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
         if not self._locked:
             self.scroll = [self.screen.get_width() // 2 - pos[0], self.screen.get_height() // 2 - pos[1]]
 

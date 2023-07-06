@@ -25,9 +25,9 @@ class SFXManager:
                 self.music[file] = [music for music in os.listdir(f'{self.path}{os.sep}music{os.sep}{file}') if music[0] != '.']
         self.num_channels = num_channels
 
-    def play(self, name, loops=0, maxtime=0, fade_ms=0):
+    def play(self, name: str, loops=0, maxtime=0, fade_ms=0):
         try:
-            pygame.mixer.find_channel(True).play(random.choice(self.sounds[name]), loops, maxtime, fade_ms)
+            pygame.mixer.find_channel().play(random.choice(self.sounds[name]), loops, maxtime, fade_ms)
         except KeyError:
             pass
 
@@ -53,14 +53,14 @@ class SFXManager:
         pygame.mixer.music.unpause()
         self.paused = False
 
-    def stop(self, name):
+    def stop(self, name: str):
         for sound in self.sounds[name]:
             sound.stop()
 
-    def new_sound(self, path):
+    def new_sound(self, path: str):
         self.sounds[path] = [pygame.mixer.Sound(sound) for sound in os.listdir(path) if sound[0] != '.']
 
-    def add_queue(self, music):
+    def add_queue(self, music: str):
         self.queue.append(music)
 
     @staticmethod

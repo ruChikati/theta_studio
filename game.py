@@ -20,7 +20,7 @@ class Game:
         self.dt = 1.
         self._last_time = time()
 
-        self.entities = [] # TODO, contemplate including level/world in Game object
+        self.entities = []
         self.solver = physics.PhysicsSolver(self.entities, self)
 
     def update(self):

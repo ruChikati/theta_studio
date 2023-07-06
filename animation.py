@@ -89,6 +89,51 @@ class Animation:
         return sum(self.config['frames'])
 
 
+class SpriteStack:
+
+    def __init__(self, path, cache_length=72):
+        self.frames = []
+        for f in os.listdir(path):
+            surf = pygame.image.load(path + os.sep + f).convert_alpha()
+            if surf.get_colorkey() is None:
+                surf.set_colorkey((1, 1, 1))
+            self.frames.append(surf)
+
+        self._cache = {}
+        for i in range(0, 360, round(360 / cache_length)):
+            self.cache_rotation(i)
+
+    def cache_rotation(self, rot, spread=1):
+        if rot not in self._cache:
+            imgs = []
+            for i, img in enumerate(self.frames):
+                imgs.append(pygame.transform.rotate(img, rot))
+            surf = pygame.Surface((max(f.get_width() for f in imgs), max(f.get_height() for f in imgs) + len(imgs)))
+            for i, img in enumerate(imgs):
+                surf.blit(img, ((surf.get_width() - img.get_width()) // 2, (surf.get_height() - img.get_height() - len(imgs)) // 2 - i * spread))
+            self._cache[rot] = surf
+
+    def render(self, surf, pos, rot, spread=1):
+        if rot in self._cache:
+            image = self._cache[rot]
+            surf.blit(image, (pos[0] - image.get_width() // 2, pos[1] - image.get_height() // 2))
+        else:
+            for i, img in enumerate(self.frames):
+                img = pygame.transform.rotate(img, rot)
+                surf.blit(img, (pos[0] - img.get_width() // 2, pos[1] - img.get_height() // 2 - i * spread))
+
+    def get_surf(self, rot, spread=1):
+        if rot in self._cache:
+            return self._cache[rot]
+        imgs = []
+        for i, img in enumerate(self.frames):
+            imgs.append(pygame.transform.rotate(img, rot))
+        surf = pygame.Surface((max(f.get_width() for f in imgs), max(f.get_height() for f in imgs) + len(imgs)))
+        for i, img in enumerate(imgs):
+            surf.blit(img, ((surf.get_width() - img.get_width()) // 2, (surf.get_height() - img.get_height() - len(imgs)) // 2 - i * spread))
+        return surf
+
+
 class AnimationManager:
 
     def __init__(self, path=f'data{os.sep}anims'):
