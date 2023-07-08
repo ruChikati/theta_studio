@@ -43,6 +43,7 @@ class Camera:
         self.current_points = None
 
         self._the_dirty_rects = []
+        self._to_blit = []
 
         for file in os.listdir(self.cutscene_path):
             if file[0] != '.':
@@ -50,14 +51,16 @@ class Camera:
                 self.cutscenes[cutscene.name] = cutscene
 
     def update(self, full_screen=False):
+        self.display.fill(self.bgc)
+        self.screen.fill(self.bgc)
         if self.current_points is not None:
             try:
                 self.scroll = next(self.current_points)
             except StopIteration:
                 self.unlock()
                 self.current_points = None
-        self.display.fill(self.bgc)
-        self.screen.fill(self.bgc)
+        for (img, pos) in self._to_blit:
+            self.screen.blit(img, (pos[0] + self.scroll[0], pos[1] + self.scroll[1]))
         self.display.blit(self.screen, (0, 0))
         if full_screen:
             pygame.display.update()
@@ -84,7 +87,10 @@ class Camera:
         self._the_dirty_rects.extend(rects)
 
     def render(self, surf: pygame.Surface, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
-        self.screen.blit(surf, pos)
+        self._to_blit.append((surf, pos))
+
+    def fill(self, r, g, b):
+        self.screen.fill((r, g, b))
 
     def zoom(self, flt: float):
         if not self._locked:

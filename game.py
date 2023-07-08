@@ -23,9 +23,10 @@ class Game:
         self.entities = []
         self.solver = physics.PhysicsSolver(self.entities, self)
 
-    def update(self):
-        self.dt = time() - self._last_time
+    def update(self, full_screen=False):
+        self.dt = (time() - self._last_time) * self.fps
         self._last_time = time()
+
         m_clicked = False
         for event in self.input.get():
             if event.type == input.MOUSEDOWN:
@@ -34,7 +35,7 @@ class Game:
         self.solver.update(self.dt)
 
         self.ui.update(self.camera.screen, self.input.m_pos, m_clicked)
-        self.camera.update()
+        self.camera.update(full_screen)
 
         self.clock.tick(self.fps)
 

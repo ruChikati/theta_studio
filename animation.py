@@ -75,6 +75,9 @@ class Animation:
         self._calcualate_img()
         return self._img
 
+    def get_img(self):
+        return self._img
+
     def rewind(self, index=0):
         self.frame = index
 
@@ -142,7 +145,14 @@ class AnimationManager:
         for directory in os.listdir(path):
             if directory[0] != '.':
                 self.anims[directory] = Animation(f'{path}{os.sep}{directory}')
-                # anims are stored as sortable images along with a config.json file
+                # anims are stored as sortable images, in dirs named obj:anim, along with a config.json file
+
+    def get_dict(self, name: str) -> dict[str: Animation]:
+        dct = {}
+        for anim in self.anims:
+            if anim.split(':')[0] == name:
+              dct[anim.split(':')[1]] = self.anims[anim]
+        return dct
 
     def new(self, path):
         self.anims[path.split(os.sep)[-1]] = Animation(path)
