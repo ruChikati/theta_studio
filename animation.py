@@ -17,7 +17,7 @@ class FileTypeError(Exception):
 
 class LengthError(Exception):
 
-    def __init__(self, msg):
+    def __init__(self, msg: str):
         self.msg = msg
 
     def __str__(self):
@@ -26,7 +26,7 @@ class LengthError(Exception):
 
 class Animation:
 
-    def __init__(self, path):
+    def __init__(self, path: str):
         self.path = path
         self.frame_paths = os.listdir(self.path)
         self.frame = 0
@@ -66,7 +66,7 @@ class Animation:
             self._img = self.frames[-1]
 
 
-    def play(self, dt, fps=60):
+    def play(self, dt: float, fps=60):
         if not self.paused:
             self.frame += dt * fps * self.config['speed']
         if self.config['loop']:
@@ -94,65 +94,106 @@ class Animation:
 
 class SpriteStack:
 
-    def __init__(self, path, cache_length=72):
+    def __init__(self, path: str, caching_step=15):
         self.frames = []
-        for f in os.listdir(path):
-            surf = pygame.image.load(path + os.sep + f).convert_alpha()
-            if surf.get_colorkey() is None:
-                surf.set_colorkey((1, 1, 1))
-            self.frames.append(surf)
+        folder = os.listdir(path)
+        folder.sort()
+        for f in folder:
+            if f[0] != '.' and f != 'config.json':
+                surf = pygame.image.load(path + os.sep + f).convert_alpha()
+                self.frames.append(surf)
 
         self._cache = {}
-        for i in range(0, 360, round(360 / cache_length)):
+        self.cache_rotation(0)
+        self.cache_rotation(90)
+        self.cache_rotation(180)
+        self.cache_rotation(270)
+        for i in range(0, 360, caching_step):
             self.cache_rotation(i)
 
-    def cache_rotation(self, rot, spread=1):
+    def cache_rotation(self, rot: float, spread=1):
+        rot %= 360
         if rot not in self._cache:
             imgs = []
-            for i, img in enumerate(self.frames):
+            for img in self.frames:
                 imgs.append(pygame.transform.rotate(img, rot))
-            surf = pygame.Surface((max(f.get_width() for f in imgs), max(f.get_height() for f in imgs) + len(imgs)))
+            surf = pygame.Surface((max(f.get_width() for f in imgs), max(f.get_height() for f in imgs) + len(imgs) * spread))
+            surf.fill((1, 1, 1))
             for i, img in enumerate(imgs):
-                surf.blit(img, ((surf.get_width() - img.get_width()) // 2, (surf.get_height() - img.get_height() - len(imgs)) // 2 - i * spread))
+                surf.blit(img, ((surf.get_width() - img.get_width()) // 2, (surf.get_height() - img.get_height() + len(imgs) * spread) // 2- i * spread))
+            final_surf = pygame.Surface((surf.get_width(), surf.get_height() - len(imgs)))
+            final_surf.set_colorkey((1, 1, 1))
+            final_surf.fill((1, 1, 1))
+            final_surf.blit(surf, (0, -len(imgs) // 2))
             self._cache[rot] = surf
 
-    def render(self, surf, pos, rot, spread=1):
+    def render(self, surf: pygame.Surface, pos, rot: float, spread=1):
+        rot %= 360
         if rot in self._cache:
             image = self._cache[rot]
+            image.set_colorkey((1, 1, 1))
             surf.blit(image, (pos[0] - image.get_width() // 2, pos[1] - image.get_height() // 2))
         else:
             for i, img in enumerate(self.frames):
                 img = pygame.transform.rotate(img, rot)
+                img.set_colorkey((1, 1, 1))
                 surf.blit(img, (pos[0] - img.get_width() // 2, pos[1] - img.get_height() // 2 - i * spread))
 
-    def get_surf(self, rot, spread=1):
+    def render_to_game(self, game, pos, rot: float, spread=1):
+        rot %= 360
+        if rot in self._cache:
+            image = self._cache[rot]
+            image.set_colorkey((1, 1, 1))
+            game.camera.render(image, (pos[0] - image.get_width() // 2, pos[1] - image.get_height() // 2 - (len(self.frames) // 2) * spread))
+        else:
+            for i, img in enumerate(self.frames):
+                img = pygame.transform.rotate(img, rot)
+                img.set_colorkey((1, 1, 1))
+                game.camera.render(img, (pos[0] - img.get_width() // 2, pos[1] - img.get_height() // 2 - i * spread))
+
+    def get_img(self, rot: float, spread=1) -> pygame.Surface:
+        rot %= 360
         if rot in self._cache:
             return self._cache[rot]
         imgs = []
         for i, img in enumerate(self.frames):
             imgs.append(pygame.transform.rotate(img, rot))
-        surf = pygame.Surface((max(f.get_width() for f in imgs), max(f.get_height() for f in imgs) + len(imgs)))
+        surf = pygame.Surface((max(f.get_width() for f in imgs), max(f.get_height() for f in imgs) + len(imgs) * spread))
+        surf.set_colorkey((1, 1, 1))
+        surf.fill((1, 1, 1))
         for i, img in enumerate(imgs):
-            surf.blit(img, ((surf.get_width() - img.get_width()) // 2, (surf.get_height() - img.get_height() - len(imgs)) // 2 - i * spread))
+            img = pygame.transform.rotate(img, rot)
+            surf.blit(img, ((surf.get_width() - img.get_width()) // 2, (surf.get_height() - img.get_height() + len(imgs) * spread) // 2 - i * spread))
         return surf
 
 
 class AnimationManager:
 
-    def __init__(self, path=f'data{os.sep}anims'):
+    def __init__(self, path=f'data{os.sep}gfx'):
         self.path = path
         self.anims = {}
-        for directory in os.listdir(path):
+        self.spritestacks = {}
+        for directory in os.listdir(path + os.sep + 'anims'):
             if directory[0] != '.':
-                self.anims[directory] = Animation(f'{path}{os.sep}{directory}')
+                self.anims[directory] = Animation(f'{path}{os.sep}anims{os.sep}{directory}')
                 # anims are stored as sortable images, in dirs named obj:anim, along with a config.json file
+        for directory in os.listdir(path + os.sep + 'anims'):
+            if directory[0] != '.':
+                self.spritestacks[directory] = SpriteStack(f'{path}{os.sep}spritestacks{os.sep}{directory}')
 
-    def get_dict(self, name: str) -> dict[str: Animation]:
+    def get_anims(self, name: str) -> dict[str: Animation]:
         dct = {}
         for anim in self.anims:
             if anim.split(':')[0] == name:
               dct[anim.split(':')[1]] = self.anims[anim]
         return dct
 
-    def new(self, path):
+    def get_spritestacks(self, name: str) -> dict[str: SpriteStack]:
+        dct = {}
+        for ss in self.spritestacks:
+            if ss.split(':')[0] == name:
+                dct[ss.split(':')[1]] = self.spritestacks[ss]
+        return dct
+
+    def new(self, path: str):
         self.anims[path.split(os.sep)[-1]] = Animation(path)

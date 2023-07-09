@@ -59,9 +59,21 @@ class Camera:
             except StopIteration:
                 self.unlock()
                 self.current_points = None
-        for (img, pos) in self._to_blit:
-            self.screen.blit(img, (pos[0] + self.scroll[0], pos[1] + self.scroll[1]))
-        self.display.blit(self.screen, (0, 0))
+
+        for i, (img, pos) in enumerate(self._to_blit):
+            self._to_blit[i] = (img, (pos[0] + self.scroll[0], pos[1] + self.scroll[1]))
+        self.screen.blits(self._to_blit, 0)
+        self._to_blit *= 0
+
+        if self.zoom == 1:
+            self.display.blit(self.screen, (0, 0))
+        elif self.zoom == 2:
+            screen = pygame.transform.scale2x(self.screen)
+            self.display.blit(screen, ((self.display.get_width() - screen.get_width()) // 2, (self.display.get_height() - screen.get_height()) // 2))
+        else:
+            screen = pygame.transform.scale(self.screen, (self.screen.get_width() * self.zoom, self.screen.get_height() * self.zoom))
+            self.display.blit(screen, ((self.display.get_width() - screen.get_width()) // 2, (self.display.get_height() - screen.get_height()) // 2))
+
         if full_screen:
             pygame.display.update()
         else:
@@ -92,9 +104,14 @@ class Camera:
     def fill(self, r, g, b):
         self.screen.fill((r, g, b))
 
-    def zoom(self, flt: float):
+    def zoom_to(self, flt: float):
         if not self._locked:
-            if not (flt < 0 and self.zoom <= .1):
+            if flt >= 0.1:
+                self.zoom = flt
+
+    def zoom_by(self, flt: float):
+        if not self._locked:
+            if not (flt < 0 and self.zoom <= 0.1):
                 self.zoom += flt
 
     def move_by(self, pos: tuple[int, int] | list[int, int] | pygame.Vector2):

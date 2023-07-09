@@ -59,10 +59,10 @@ class Input:
         self.my = 0
         self.m_pos = (self.mx, self.my)
 
-    def post(self, event):
+    def post(self, event: Event):
         self.posted_events.append(event)
 
-    def get(self):
+    def get(self) -> list[Event]:
 
         self.controllers = [pygame.joystick.Joystick(c) for c in range(pygame.joystick.get_count())]
         self.m_pos = self.mx, self.my = pygame.mouse.get_pos()
@@ -70,8 +70,8 @@ class Input:
         return_list = []
         cur_time = time.time()
         while len(self.cache[0]) >= self.length:
-            del self.cache[1]
-            del self.cache[0]
+            del self.cache[1][0]
+            del self.cache[0][0]
         for event in pygame.event.get():
             match event.type:
                 case pygame.KEYDOWN:

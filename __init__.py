@@ -1,7 +1,7 @@
 
 import os as _os
 from . import animation, camera, font, funcs, input, level, particle, physics, sfx, ui
-from .entity import Entity
+from .entity import Entity, SpriteStackEntity
 from .game import Game
 DATA_DIR = _os.path.abspath('data')
 
