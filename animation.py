@@ -92,7 +92,7 @@ class Animation:
         return sum(self.config['frames'])
 
 
-class SpriteStack:  # TODO: fix: spritestacks are off-center
+class SpriteStack:
 
     def __init__(self, path: str, caching_step=6):
         self.frames = []
