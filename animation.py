@@ -92,9 +92,9 @@ class Animation:
         return sum(self.config['frames'])
 
 
-class SpriteStack:
+class SpriteStack:  # TODO: fix: spritestacks are off-center
 
-    def __init__(self, path: str, caching_step=15):
+    def __init__(self, path: str, caching_step=6):
         self.frames = []
         folder = os.listdir(path)
         folder.sort()
@@ -105,9 +105,13 @@ class SpriteStack:
 
         self._cache = {}
         self.cache_rotation(0)
+        self.cache_rotation(45)
         self.cache_rotation(90)
+        self.cache_rotation(135)
         self.cache_rotation(180)
+        self.cache_rotation(225)
         self.cache_rotation(270)
+        self.cache_rotation(315)
         for i in range(0, 360, caching_step):
             self.cache_rotation(i)
 

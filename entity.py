@@ -55,4 +55,4 @@ class SpriteStackEntity(physics.VerletObject):
         self.rot %= 360
 
         self.accel = pygame.Vector2(0, 0)
-        self.spritestacks[self.action].render_to_game(self.game, self.pos, self.rot)
+        self.spritestacks[self.action].render_to_game(self.game, (self.pos.x + self.w // 2, self.pos.y + self.h // 2), self.rot)

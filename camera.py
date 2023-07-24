@@ -127,6 +127,9 @@ class Camera:
         if not self._locked:
             self.scroll = [self.screen.get_width() // 2 - pos[0], self.screen.get_height() // 2 - pos[1]]
 
+    def get_centre(self, scroll=True) -> tuple[int, int]:
+        return self.screen.get_width() // 2 - self.scroll[0], self.screen.get_height() // 2 - self.scroll[1]
+
     def lock(self):
         self._locked = True
 
