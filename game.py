@@ -12,9 +12,9 @@ class Game:
     DATA_PATH = f'.{sep}'
 
     def __init__(self, fps=60):
-        self.ui = ui.UIManager(self, Game.DATA_PATH + f'data{sep}ui')
+        self.ui = ui.UIManager(self)
         self.input = input.Input()
-        self.camera = camera.Camera(512, 512, Game.DATA_PATH + f'data{sep}cutscenes')
+        self.camera = camera.Camera(512, 512)
         self.clock = pygame.time.Clock()
         self.fps = fps
         self.dt = 1.

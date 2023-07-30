@@ -10,19 +10,21 @@ pygame.mixer.init()
 
 class SFXManager:
 
-    def __init__(self, path=f'data{os.sep}sfx', num_channels=63):
+    DATA_PATH = f'.{os.sep}data{os.sep}sfx{os.sep}'
+
+    def __init__(self, path=DATA_PATH, num_channels=63):
         self.path = path
         self.sounds = {}
         self.music = {}
         self.paused = False
         self.queue = []
-        for file in os.listdir(f'{self.path}{os.sep}sounds'):
+        for file in os.listdir(f'{self.path}sounds'):
             if '.' not in file:
-                self.sounds[file] = [pygame.mixer.Sound(f'{self.path}{os.sep}sounds{os.sep}{file}{os.sep}{sound}') for sound in os.listdir(f'{self.path}{os.sep}sounds{os.sep}{file}') if sound[0] != '.']
+                self.sounds[file] = [pygame.mixer.Sound(f'{self.path}sounds{os.sep}{file}{os.sep}{sound}') for sound in os.listdir(f'{self.path}sounds{os.sep}{file}') if sound[0] != '.']
                 # sounds are stored in a directory which is stored in `path`
-        for file in os.listdir(f'{self.path}{os.sep}music'):
+        for file in os.listdir(f'{self.path}music'):
             if '.' not in file:
-                self.music[file] = [music for music in os.listdir(f'{self.path}{os.sep}music{os.sep}{file}') if music[0] != '.']
+                self.music[file] = [music for music in os.listdir(f'{self.path}music{os.sep}{file}') if music[0] != '.']
         self.num_channels = num_channels
 
     def play(self, name: str, loops=0, maxtime=0, fade_ms=0):

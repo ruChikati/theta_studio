@@ -38,7 +38,9 @@ class Page:
 
 class UIManager:
 
-    def __init__(self, game, path=f'data{os.sep}ui'):
+    DATA_PATH = f'.{os.sep}data{os.sep}ui{os.sep}'
+
+    def __init__(self, game, path=DATA_PATH):
         self.pages = {'': Page([])}
         self.path = path
         for file in os.listdir(path):

@@ -75,21 +75,23 @@ SysFont = pygame.font.SysFont
 
 class FontManager:
 
-    def __init__(self, path=f'data{os.sep}fonts', bar_colour=(128, 128, 128), colourkey=(0, 0, 0)):
+    DATA_PATH = f'.{os.sep}data{os.sep}fonts{os.sep}'
+
+    def __init__(self, path=DATA_PATH, bar_colour=(128, 128, 128), colourkey=(0, 0, 0)):
         self.path = path
         self.fonts = {}
         order = None
         for file in os.listdir(path):
             if file.split('.')[0] == 'order':
-                order = path + os.sep + file
+                order = path + file
 
         if order is None:
-            write_file(path + os.sep + 'order', '!-.0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz')
-            order = path + os.sep + 'order'
+            write_file(path + 'order', '!-.0123456789:;?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz')
+            order = path + 'order'
 
         for file in os.listdir(path):
             if file[0] != '.' and file != 'order':
-                self.fonts[file.split('.')[0]] = Font(f'{path}{os.sep}{file}', order, bar_colour, colourkey)
+                self.fonts[file.split('.')[0]] = Font(f'{path}{file}', order, bar_colour, colourkey)
                 # fonts are stored in a directory alongs with the order `order` in which the chars appear
 
     def __getitem__(self, item) -> Font:

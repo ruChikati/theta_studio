@@ -199,12 +199,14 @@ class World:    # TODO: maybe move entities to the chunk level? easier to comput
 
 class WorldManager:
 
-    def __init__(self, game, path=f'data{sep}worlds'):
+    DATA_PATH = f'.{sep}data{sep}worlds{sep}'
+
+    def __init__(self, game, path=DATA_PATH):
         self.path = path
         self.worlds = {}
         for world in listdir(path):
             if not world.startswith('.'):
-                data = read_json(f'{path}{sep}{world}')
+                data = read_json(f'{path}{world}')
                 self.worlds[world.split('.')[0]] = World(world.split('.')[0], data['level']['chunks'], game, data['entities'])
         self.active_world = '0'
         self.game = game

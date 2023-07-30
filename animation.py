@@ -173,30 +173,34 @@ class SpriteStack:
 
 class AnimationManager:
 
-    def __init__(self, path=f'data{os.sep}gfx'):
+    DATA_PATH = f'.{os.sep}data{os.sep}gfx{os.sep}anims{os.sep}'
+    SS_PATH = f'.{os.sep}data{os.sep}gfx{os.sep}spritestacks{os.sep}'
+
+    def __init__(self, path=DATA_PATH, ss_path=SS_PATH):
         self.path = path
+        self.ss_path = ss_path
         self.anims = {}
         self.spritestacks = {}
-        for directory in os.listdir(path + os.sep + 'anims'):
+        for directory in os.listdir(path):
             if directory[0] != '.':
-                self.anims[directory] = Animation(f'{path}{os.sep}anims{os.sep}{directory}')
-                # anims are stored as sortable images, in dirs named obj:anim, along with a config.json file
-        for directory in os.listdir(path + os.sep + 'anims'):
+                self.anims[directory] = Animation(f'{path}{directory}')
+                # anims are stored as sortable images, in dirs named obj;anim, along with a config.json file
+        for directory in os.listdir(path):
             if directory[0] != '.':
-                self.spritestacks[directory] = SpriteStack(f'{path}{os.sep}spritestacks{os.sep}{directory}')
+                self.spritestacks[directory] = SpriteStack(f'{ss_path}{directory}')
 
     def get_anims(self, name: str) -> dict[str: Animation]:
         dct = {}
         for anim in self.anims:
-            if anim.split(':')[0] == name:
-              dct[anim.split(':')[1]] = self.anims[anim]
+            if anim.split(';')[0] == name:
+              dct[anim.split(';')[1]] = self.anims[anim]
         return dct
 
     def get_spritestacks(self, name: str) -> dict[str: SpriteStack]:
         dct = {}
         for ss in self.spritestacks:
-            if ss.split(':')[0] == name:
-                dct[ss.split(':')[1]] = self.spritestacks[ss]
+            if ss.split(';')[0] == name:
+                dct[ss.split(';')[1]] = self.spritestacks[ss]
         return dct
 
     def new(self, path: str):

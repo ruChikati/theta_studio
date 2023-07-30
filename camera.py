@@ -31,7 +31,9 @@ class CameraCutscene:
 
 class Camera:
 
-    def __init__(self, w: int, h: int, cutscene_path=f'data{os.sep}cutscenes', bg_colour=(0, 0, 0)):
+    DATA_PATH = f'.{os.sep}data{os.sep}cutscenes{os.sep}'
+
+    def __init__(self, w: int, h: int, cutscene_path=DATA_PATH, bg_colour=(0, 0, 0)):
         self.display = pygame.display.set_mode((w, h), pygame.RESIZABLE)
         self.screen = pygame.Surface((w, h))
         self.scroll = [0, 0]
