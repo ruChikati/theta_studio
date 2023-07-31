@@ -9,8 +9,6 @@ from . import camera, input, physics, ui
 
 class Game:
 
-    DATA_PATH = f'.{sep}'
-
     def __init__(self, fps=60):
         self.ui = ui.UIManager(self)
         self.input = input.Input()
