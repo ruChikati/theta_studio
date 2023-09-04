@@ -1,4 +1,3 @@
-
 import os
 
 import pygame
@@ -9,29 +8,36 @@ from .funcs import normalize
 def _bezier_curve_point(point_list, t: float, x_or_y: 0 | 1):
     if len(point_list) == 1:
         return point_list[0][x_or_y]
-    return round(_bezier_curve_point(point_list[:-1], t, x_or_y) * (1 - t) + _bezier_curve_point(point_list[1:], t, x_or_y) * t, 5)
+    return round(
+        _bezier_curve_point(point_list[:-1], t, x_or_y) * (1 - t)
+        + _bezier_curve_point(point_list[1:], t, x_or_y) * t,
+        5,
+    )
 
 
 def bezier_curve(def_points, speed=0.01):
     points = []
     for t in [_ * speed for _ in range(int((1 + speed * 2) // speed))]:
-        points.append([_bezier_curve_point(def_points, t, 0), _bezier_curve_point(def_points, t, 1)])
+        points.append(
+            [
+                _bezier_curve_point(def_points, t, 0),
+                _bezier_curve_point(def_points, t, 1),
+            ]
+        )
     return points
 
 
 class CameraCutscene:
-
     def __init__(self, path: str):
         self.path = path
-        self.name = path.split(os.sep)[-1].split('.')[0]
-        with open(self.path, 'r') as data:
-            self.points = [float(num) for num in data.read().split(';')[0].split(',')]
-            self.curve = bezier_curve(self.points, float(data.read().split(';')[-1]))
+        self.name = path.split(os.sep)[-1].split(".")[0]
+        with open(self.path, "r") as data:
+            self.points = [float(num) for num in data.read().split(";")[0].split(",")]
+            self.curve = bezier_curve(self.points, float(data.read().split(";")[-1]))
 
 
 class Camera:
-
-    DATA_PATH = f'.{os.sep}data{os.sep}cutscenes{os.sep}'
+    DATA_PATH = f".{os.sep}data{os.sep}cutscenes{os.sep}"
 
     def __init__(self, w: int, h: int, cutscene_path=DATA_PATH, bg_colour=(0, 0, 0)):
         self.display = pygame.display.set_mode((w, h), pygame.RESIZABLE)
@@ -48,7 +54,7 @@ class Camera:
         self._to_blit = []
 
         for file in os.listdir(self.cutscene_path):
-            if file[0] != '.':
+            if file[0] != ".":
                 cutscene = CameraCutscene(file)
                 self.cutscenes[cutscene.name] = cutscene
 
@@ -71,10 +77,28 @@ class Camera:
             self.display.blit(self.screen, (0, 0))
         elif self.zoom == 2:
             screen = pygame.transform.scale2x(self.screen)
-            self.display.blit(screen, ((self.display.get_width() - screen.get_width()) // 2, (self.display.get_height() - screen.get_height()) // 2))
+            self.display.blit(
+                screen,
+                (
+                    (self.display.get_width() - screen.get_width()) // 2,
+                    (self.display.get_height() - screen.get_height()) // 2,
+                ),
+            )
         else:
-            screen = pygame.transform.scale(self.screen, (self.screen.get_width() * self.zoom, self.screen.get_height() * self.zoom))
-            self.display.blit(screen, ((self.display.get_width() - screen.get_width()) // 2, (self.display.get_height() - screen.get_height()) // 2))
+            screen = pygame.transform.scale(
+                self.screen,
+                (
+                    self.screen.get_width() * self.zoom,
+                    self.screen.get_height() * self.zoom,
+                ),
+            )
+            self.display.blit(
+                screen,
+                (
+                    (self.display.get_width() - screen.get_width()) // 2,
+                    (self.display.get_height() - screen.get_height()) // 2,
+                ),
+            )
 
         if full_screen:
             pygame.display.update()
@@ -84,7 +108,10 @@ class Camera:
     def play_cutscene(self, name: str) -> list[list[int, int]]:
         points = self.cutscenes[name].curve
         for i, point in enumerate(points):
-            points[i] = [normalize(points[0][0], point[0]), normalize(points[0][1], point[1])]
+            points[i] = [
+                normalize(points[0][0], point[0]),
+                normalize(points[0][1], point[1]),
+            ]
 
         return_points = []
         last_point = self.scroll
@@ -100,7 +127,11 @@ class Camera:
     def add_update_rects(self, rects: list[pygame.Rect] | tuple[pygame.Rect]):
         self._the_dirty_rects.extend(rects)
 
-    def render(self, surf: pygame.Surface, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
+    def render(
+        self,
+        surf: pygame.Surface,
+        pos: tuple[int, int] | list[int, int] | pygame.Vector2,
+    ):
         self._to_blit.append((surf, pos))
 
     def fill(self, r, g, b):
@@ -127,10 +158,16 @@ class Camera:
 
     def center(self, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
         if not self._locked:
-            self.scroll = [self.screen.get_width() // 2 - pos[0], self.screen.get_height() // 2 - pos[1]]
+            self.scroll = [
+                self.screen.get_width() // 2 - pos[0],
+                self.screen.get_height() // 2 - pos[1],
+            ]
 
     def get_centre(self, scroll=True) -> tuple[int, int]:
-        return self.screen.get_width() // 2 - self.scroll[0], self.screen.get_height() // 2 - self.scroll[1]
+        return (
+            self.screen.get_width() // 2 - self.scroll[0],
+            self.screen.get_height() // 2 - self.scroll[1],
+        )
 
     def lock(self):
         self._locked = True

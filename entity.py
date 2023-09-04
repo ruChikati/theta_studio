@@ -1,13 +1,13 @@
-
 import pygame
 
 from . import physics
 
 
 class Entity(physics.VerletObject):
-
     def __init__(self, x: int, y: int, w: int, h: int, name: str, anims: dict, game):
-        super().__init__(pygame.Vector2(x, y), pygame.Vector2(x, y), pygame.Vector2(0, 0))
+        super().__init__(
+            pygame.Vector2(x, y), pygame.Vector2(x, y), pygame.Vector2(0, 0)
+        )
         self.w = w
         self.h = h
         self.rot = 0
@@ -15,7 +15,7 @@ class Entity(physics.VerletObject):
         self.rect = pygame.Rect(x, y, w, h)
         self.name = name
         self.game = game
-        self.action = 'idle' if self.anims else None
+        self.action = "idle" if self.anims else None
         self.img = self.anims[self.action].get_img() if self.anims else None
 
     def update(self, dt):
@@ -33,9 +33,12 @@ class Entity(physics.VerletObject):
 
 
 class SpriteStackEntity(physics.VerletObject):
-
-    def __init__(self, x: int, y: int, w: int, h: int, name: str, spritestacks: dict, game):
-        super().__init__(pygame.Vector2(x, y), pygame.Vector2(x, y), pygame.Vector2(0, 0))
+    def __init__(
+        self, x: int, y: int, w: int, h: int, name: str, spritestacks: dict, game
+    ):
+        super().__init__(
+            pygame.Vector2(x, y), pygame.Vector2(x, y), pygame.Vector2(0, 0)
+        )
         self.w = w
         self.h = h
         self.rot = 0
@@ -43,7 +46,7 @@ class SpriteStackEntity(physics.VerletObject):
         self.rect = pygame.Rect(x, y, w, h)
         self.name = name
         self.game = game
-        self.action = 'idle' if self.spritestacks else None
+        self.action = "idle" if self.spritestacks else None
 
     def update(self, dt):
         vel = self.pos - self.prev_pos
@@ -55,4 +58,6 @@ class SpriteStackEntity(physics.VerletObject):
         self.rot %= 360
 
         self.accel = pygame.Vector2(0, 0)
-        self.spritestacks[self.action].render_to_game(self.game, (self.pos.x + self.w // 2, self.pos.y + self.h // 2), self.rot)
+        self.spritestacks[self.action].render_to_game(
+            self.game, (self.pos.x + self.w // 2, self.pos.y + self.h // 2), self.rot
+        )

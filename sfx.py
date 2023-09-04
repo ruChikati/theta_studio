@@ -1,4 +1,3 @@
-
 import random
 import os
 
@@ -9,8 +8,7 @@ pygame.mixer.init()
 
 
 class SFXManager:
-
-    DATA_PATH = f'.{os.sep}data{os.sep}sfx{os.sep}'
+    DATA_PATH = f".{os.sep}data{os.sep}sfx{os.sep}"
 
     def __init__(self, path=DATA_PATH, num_channels=63):
         self.path = path
@@ -18,18 +16,30 @@ class SFXManager:
         self.music = {}
         self.paused = False
         self.queue = []
-        for file in os.listdir(f'{self.path}sounds'):
-            if '.' not in file:
-                self.sounds[file] = [pygame.mixer.Sound(f'{self.path}sounds{os.sep}{file}{os.sep}{sound}') for sound in os.listdir(f'{self.path}sounds{os.sep}{file}') if sound[0] != '.']
+        for file in os.listdir(f"{self.path}sounds"):
+            if "." not in file:
+                self.sounds[file] = [
+                    pygame.mixer.Sound(
+                        f"{self.path}sounds{os.sep}{file}{os.sep}{sound}"
+                    )
+                    for sound in os.listdir(f"{self.path}sounds{os.sep}{file}")
+                    if sound[0] != "."
+                ]
                 # sounds are stored in a directory which is stored in `path`
-        for file in os.listdir(f'{self.path}music'):
-            if '.' not in file:
-                self.music[file] = [music for music in os.listdir(f'{self.path}music{os.sep}{file}') if music[0] != '.']
+        for file in os.listdir(f"{self.path}music"):
+            if "." not in file:
+                self.music[file] = [
+                    music
+                    for music in os.listdir(f"{self.path}music{os.sep}{file}")
+                    if music[0] != "."
+                ]
         self.num_channels = num_channels
 
     def play(self, name: str, loops=0, maxtime=0, fade_ms=0):
         try:
-            pygame.mixer.find_channel().play(random.choice(self.sounds[name]), loops, maxtime, fade_ms)
+            pygame.mixer.find_channel().play(
+                random.choice(self.sounds[name]), loops, maxtime, fade_ms
+            )
         except KeyError:
             pass
 
@@ -60,7 +70,9 @@ class SFXManager:
             sound.stop()
 
     def new_sound(self, path: str):
-        self.sounds[path] = [pygame.mixer.Sound(sound) for sound in os.listdir(path) if sound[0] != '.']
+        self.sounds[path] = [
+            pygame.mixer.Sound(sound) for sound in os.listdir(path) if sound[0] != "."
+        ]
 
     def add_queue(self, music: str):
         self.queue.append(music)

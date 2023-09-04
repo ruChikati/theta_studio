@@ -1,4 +1,3 @@
-
 import json
 import math
 
@@ -6,23 +5,23 @@ import pygame
 
 
 def read_file(path):
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         data = f.read()
     return data
 
 
 def write_file(path, data):
-    with open(path, 'w') as f:
+    with open(path, "w") as f:
         f.write(data)
 
 
 def write_json(path, data, indent=1):
-    with open(path, 'x') as f:
+    with open(path, "x") as f:
         f.write(json.dumps(data, indent=indent))
 
 
 def read_json(path):
-    with open(path, 'r') as f:
+    with open(path, "r") as f:
         data = f.read()
     data = json.loads(data)
     return data
@@ -32,7 +31,7 @@ def sum_list(list_: list, sort=True) -> list:
     """:returns: sub-sums of a given list of numbers"""
     return_list = []
     for i in range(len(list_)):
-        return_list.append(sum(list_[:i + 1]))
+        return_list.append(sum(list_[: i + 1]))
     if sort:
         return_list.sort()
     return return_list
@@ -40,7 +39,7 @@ def sum_list(list_: list, sort=True) -> list:
 
 def string_of_(var):
     """:returns: string of the name of the given variable"""
-    return f'{var=}'.split('=')[0]
+    return f"{var=}".split("=")[0]
 
 
 def get_key(val, dict: dict):
@@ -88,7 +87,7 @@ def is_prime(n):
     if not (n % 2 and n % 3):
         return False
     i = 5
-    while i ** 2 <= n:
+    while i**2 <= n:
         if n % i == 0 or n % (i + 2) == 0:
             return False
         i += 6
@@ -106,12 +105,14 @@ def swap_colour(surf, old_colour, new_colour):
 
 
 def colored_text(r, g, b, text):
-    return f'\033[38;2;{r};{g};{b}m{text} \033[38;2;255;255;255m'
+    return f"\033[38;2;{r};{g};{b}m{text} \033[38;2;255;255;255m"
 
 
 def centre_blit(source: pygame.Surface, surf: pygame.Surface, dest=(0, 0)):
     """Blits the centre of source onto surf at dest"""
-    surf.blit(source, (dest[0] - source.get_width() // 2, dest[1] - source.get_height() // 2))
+    surf.blit(
+        source, (dest[0] - source.get_width() // 2, dest[1] - source.get_height() // 2)
+    )
 
 
 def centre_of_rect(rect):
@@ -155,25 +156,35 @@ def angle2(point1, point2):
 
 def magnitude(point):
     """:returns: the magnitude of an n-dimensional point, works in general, so it's slow"""
-    return sum(val ** 2 for val in point) ** 0.5
+    return sum(val**2 for val in point) ** 0.5
 
 
 def magnitude2(point):
     """:returns: the magnitude of a 2-dimensional point"""
     return math.sqrt(point[0] * point[0] + point[1] * point[1])
 
+
 def magnitude3(point):
     """:returns: the magnitude of a 3-dimensional point"""
     return math.sqrt(point[0] * point[0] + point[1] * point[1] + point[2] * point[2])
 
+
 def distance2(point1, point2):
     """:returns: the distance between two 2-dimensional points"""
-    return math.sqrt((point2[0] - point1[0]) * (point2[0] - point1[0]) + (point2[1] - point1[1]) * (point2[1] - point1[1]))
+    return math.sqrt(
+        (point2[0] - point1[0]) * (point2[0] - point1[0])
+        + (point2[1] - point1[1]) * (point2[1] - point1[1])
+    )
 
 
 def distance3(point1, point2):
     """:returns: the distance between two 3-dimensional points"""
-    return math.sqrt((point2[0] - point1[0]) * (point2[0] - point1[0]) + (point2[1] - point1[1]) * (point2[1] - point1[1]) + (point2[2] - point1[2]) + (point2[2]  - point1[2]))
+    return math.sqrt(
+        (point2[0] - point1[0]) * (point2[0] - point1[0])
+        + (point2[1] - point1[1]) * (point2[1] - point1[1])
+        + (point2[2] - point1[2])
+        + (point2[2] - point1[2])
+    )
 
 
 def clip(surf, x, y, w, h):
@@ -191,4 +202,9 @@ def clip_rect(surf, rect):
 
 
 def two_point_rect(point1, point2):
-    return pygame.Rect(min(point1[0], point2[0]), min(point1[1], point2[1]), max(point1[0], point2[0]) - min(point1[0], point2[0]), max(point1[1], point2[1]) - min(point1[1], point2[1]))
+    return pygame.Rect(
+        min(point1[0], point2[0]),
+        min(point1[1], point2[1]),
+        max(point1[0], point2[0]) - min(point1[0], point2[0]),
+        max(point1[1], point2[1]) - min(point1[1], point2[1]),
+    )
