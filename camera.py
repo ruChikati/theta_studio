@@ -163,7 +163,7 @@ class Camera:
                 self.screen.get_height() // 2 - pos[1],
             ]
 
-    def get_centre(self, scroll=True) -> tuple[int, int]:
+    def get_centre(self) -> tuple[int, int]:
         return (
             self.screen.get_width() // 2 - self.scroll[0],
             self.screen.get_height() // 2 - self.scroll[1],

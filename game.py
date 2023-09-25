@@ -1,5 +1,4 @@
 from time import time
-from os import sep
 
 import pygame
 
