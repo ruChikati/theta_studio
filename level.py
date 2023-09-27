@@ -57,7 +57,7 @@ class Tile:
             self.game.camera.add_update_rects(
                 [pygame.Rect(self.x, self.y, self.w, self.h)]
             )
-            self.game.camera.render(self.img)
+            self.game.camera.render(self.img, (self.x, self.y))
 
     def collides(self, rect) -> bool:
         try:
@@ -240,7 +240,7 @@ class Level:
                     return_list.append(tile)
         return return_list
 
-    def update(self, surf=None, tile_type=0):
+    def update(self, surf=None, tile_type=""):
         for chunk in self.chunks:
             chunk.update(surf, tile_type)
 
@@ -252,7 +252,7 @@ class World:  # TODO: maybe move entities to the chunk level? easier to compute 
         self.entities = list(entities)
         self.game = game
 
-    def update(self, dt: float, surf=None, tile_type=0):
+    def update(self, dt: float, surf=None, tile_type=""):
         self.level.update(surf, tile_type)
         for entity in self.entities:
             if entity.is_active:
@@ -277,7 +277,7 @@ class WorldManager:
         self.active_world = "0"
         self.game = game
 
-    def update(self, dt: float, surf=None, tile_type=0):
+    def update(self, dt: float, surf=None, tile_type=""):
         self.worlds[self.active_world].update(dt, surf, tile_type)
 
     def get_active_world(self) -> World:

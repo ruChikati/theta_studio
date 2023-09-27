@@ -4,6 +4,8 @@ import pygame
 
 from .funcs import normalize
 
+MIN_ZOOM = 0.1
+
 
 def _bezier_curve_point(point_list, t: float, x_or_y: 0 | 1):
     if len(point_list) == 1:
@@ -43,11 +45,11 @@ class Camera:
         self.display = pygame.display.set_mode((w, h), pygame.RESIZABLE)
         self.screen = pygame.Surface((w, h))
         self.scroll = [0, 0]
-        self.bgc = bg_colour
+        self._bgc = bg_colour
         self.cutscene_path = cutscene_path
         self._locked = False
         self.cutscenes = {}
-        self.zoom = 1.0
+        self._zoom = 1.0
         self.current_points = None
 
         self._the_dirty_rects = []
@@ -59,8 +61,8 @@ class Camera:
                 self.cutscenes[cutscene.name] = cutscene
 
     def update(self, full_screen=False):
-        self.display.fill(self.bgc)
-        self.screen.fill(self.bgc)
+        self.display.fill(self._bgc)
+        self.screen.fill(self._bgc)
         if self.current_points is not None:
             try:
                 self.scroll = next(self.current_points)
@@ -68,42 +70,23 @@ class Camera:
                 self.unlock()
                 self.current_points = None
 
+        screen = pygame.transform.scale(
+            self.screen, pygame.Vector2(self.screen.get_size()) / self._zoom
+        )
         for i, (img, pos) in enumerate(self._to_blit):
-            self._to_blit[i] = (img, (pos[0] + self.scroll[0], pos[1] + self.scroll[1]))
-        self.screen.blits(self._to_blit, 0)
+            self._to_blit[i] = (
+                img,
+                (pos[0] + self.scroll[0], pos[1] + self.scroll[1]),
+            )
+        screen.blits(self._to_blit, 0)
         self._to_blit *= 0
-
-        if self.zoom == 1:
-            self.display.blit(self.screen, (0, 0))
-        elif self.zoom == 2:
-            screen = pygame.transform.scale2x(self.screen)
-            self.display.blit(
-                screen,
-                (
-                    (self.display.get_width() - screen.get_width()) // 2,
-                    (self.display.get_height() - screen.get_height()) // 2,
-                ),
-            )
-        else:
-            screen = pygame.transform.scale(
-                self.screen,
-                (
-                    self.screen.get_width() * self.zoom,
-                    self.screen.get_height() * self.zoom,
-                ),
-            )
-            self.display.blit(
-                screen,
-                (
-                    (self.display.get_width() - screen.get_width()) // 2,
-                    (self.display.get_height() - screen.get_height()) // 2,
-                ),
-            )
+        pygame.transform.scale(screen, self.display.get_size(), self.display)
 
         if full_screen:
-            pygame.display.update()
+            pygame.display.flip()
         else:
             pygame.display.update(self._the_dirty_rects)
+        self._the_dirty_rects *= 0
 
     def play_cutscene(self, name: str) -> list[list[int, int]]:
         points = self.cutscenes[name].curve
@@ -139,13 +122,16 @@ class Camera:
 
     def zoom_to(self, flt: float):
         if not self._locked:
-            if flt >= 0.1:
-                self.zoom = flt
+            if flt >= MIN_ZOOM:
+                self._zoom = flt
 
     def zoom_by(self, flt: float):
         if not self._locked:
-            if not (flt < 0 and self.zoom <= 0.1):
-                self.zoom += flt
+            if not (flt < 0 and self._zoom <= MIN_ZOOM):
+                self._zoom += flt
+
+    def get_zoom(self) -> float:
+        return self._zoom
 
     def move_by(self, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
         if not self._locked:
@@ -168,6 +154,13 @@ class Camera:
             self.screen.get_width() // 2 - self.scroll[0],
             self.screen.get_height() // 2 - self.scroll[1],
         )
+
+    def get_background(self) -> tuple[int, int, int]:
+        return self._bgc
+
+    def set_background(self, colour):
+        self._bgc = colour
+        self._the_dirty_rects.append([0, 0, *self.screen.get_size()])
 
     def lock(self):
         self._locked = True

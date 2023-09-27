@@ -35,6 +35,10 @@ class VerletObject:
     def accelerate(self, acc: pygame.Vector2):
         self.accel += acc
 
+    def teleport(self, pos: pygame.Vector2):
+        self.pos = pos
+        self.prev_pos = pos
+
 
 class PhysicsSolver:
     gravity = pygame.Vector2(0, 10)
@@ -90,10 +94,12 @@ class PhysicsSolver:
                 obj.pos -= r1 - distv / 2
                 obj2.pos += r2 - distv / 2
 
-    def update(self, dt: float):
+    def update(self, dt: float, collisions=True):
         for i in range(self.steps):
             for obj in self.objects:
                 obj.accelerate(PhysicsSolver.gravity)
                 obj.update(dt / self.steps)
+            if collisions:
+                self.handle_collisions()
+        if collisions:
             self.handle_collisions()
-        self.handle_collisions()
