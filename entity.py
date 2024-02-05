@@ -8,8 +8,6 @@ class Entity(physics.VerletObject):
         super().__init__(
             pygame.Vector2(x, y), pygame.Vector2(x, y), pygame.Vector2(0, 0), w, h
         )
-        self.w = w
-        self.h = h
         self.rot = 0
         self.anims = anims if anims is not None else {}
         self.rect = pygame.Rect(x, y, w, h)
@@ -19,17 +17,16 @@ class Entity(physics.VerletObject):
         self.img = self.anims[self.action].get_img() if self.anims else None
 
     def update(self, dt):
+        old_rect = self.rect.copy()
         vel = self.pos - self.prev_pos
-        self.prev_pos = self.pos
-        self.game.camera.add_update_rects([self.rect.move(self.game.camera.scroll)])
+        self.prev_pos = self.pos.copy()
         self.pos += vel + self.accel * dt * dt
         self.rect.topleft = self.pos
-        self.game.camera.add_update_rects([self.rect])
         self.rot %= 360
+        self.game.camera.add_update_rect(self.rect.union(old_rect).inflate(3, 3))
 
         self.accel = pygame.Vector2(0, 0)
         self.img = self.anims[self.action].play(dt)
-        self.game.camera.add_update_rects([self.rect.move(self.game.camera.scroll)])
         self.game.camera.render(self.img, self.pos)
 
     @property
@@ -44,8 +41,6 @@ class SpriteStackEntity(physics.VerletObject):
         super().__init__(
             pygame.Vector2(x, y), pygame.Vector2(x, y), pygame.Vector2(0, 0), w, h
         )
-        self.w = w
-        self.h = h
         self.rot = 0
         self.spritestacks = spritestacks if spritestacks is not None else {}
         self.rect = pygame.Rect(x, y, w, h)
@@ -54,13 +49,13 @@ class SpriteStackEntity(physics.VerletObject):
         self.action = "idle" if self.spritestacks else None
 
     def update(self, dt):
-        self.game.camera.add_update_rects([self.rect])
+        old_rect = self.rect.copy()
         vel = self.pos - self.prev_pos
         self.prev_pos = self.pos
         self.pos += vel + self.accel * dt * dt
         self.rect.topleft = self.pos
         self.rot %= 360
-        self.game.camera.add_update_rects([self.rect])
+        self.game.camera.add_update_rect(self.rect.union(old_rect).inflate(3, 3))
 
         self.accel = pygame.Vector2(0, 0)
         self.spritestacks[self.action].render_to_game(

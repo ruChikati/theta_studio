@@ -21,10 +21,10 @@ def bezier_curve(def_points, speed=0.01):
     points = []
     for t in [_ * speed for _ in range(int((1 + speed * 2) // speed))]:
         points.append(
-            [
+            pygame.Vector2(
                 _bezier_curve_point(def_points, t, 0),
                 _bezier_curve_point(def_points, t, 1),
-            ]
+            )
         )
     return points
 
@@ -33,9 +33,14 @@ class CameraCutscene:
     def __init__(self, path: str):
         self.path = path
         self.name = path.split(os.sep)[-1].split(".")[0]
-        with open(self.path, "r") as data:
-            self.points = [float(num) for num in data.read().split(";")[0].split(",")]
-            self.curve = bezier_curve(self.points, float(data.read().split(";")[-1]))
+        self.points = []
+        with open(
+            self.path, "r"
+        ) as data:  # stored as: num1x,num1y/num2x,num2y...;speed
+            for p in data.read().split(";")[0].split("/"):
+                self.points.append((float(p.split(",")[0]), float(p.split(",")[1])))
+            self.speed = float(data.read().split(";")[-1])
+            self.curve = bezier_curve(self.points, self.speed)
 
 
 class Camera:
@@ -44,12 +49,12 @@ class Camera:
     def __init__(self, w: int, h: int, cutscene_path=DATA_PATH, bg_colour=(0, 0, 0)):
         self.display = pygame.display.set_mode((w, h), pygame.RESIZABLE)
         self.screen = pygame.Surface((w, h))
-        self.scroll = [0, 0]
+        self.scroll = pygame.Vector2(0, 0)
         self._bgc = bg_colour
         self.cutscene_path = cutscene_path
         self._locked = False
         self.cutscenes = {}
-        self._zoom = 1.0
+        self._zoom_inv = 1.0
         self.current_points = None
 
         self._the_dirty_rects = []
@@ -60,41 +65,47 @@ class Camera:
                 cutscene = CameraCutscene(file)
                 self.cutscenes[cutscene.name] = cutscene
 
-    def update(self, full_screen=False):
+    def update(self, full_screen=True):
         self.display.fill(self._bgc)
         self.screen.fill(self._bgc)
         if self.current_points is not None:
             try:
-                self.scroll = next(self.current_points)
+                self.scroll = pygame.Vector2(next(self.current_points))
+                self._the_dirty_rects.append(
+                    pygame.Rect(0, 0, *self.display.get_size())
+                )
             except StopIteration:
                 self.unlock()
                 self.current_points = None
 
-        screen = pygame.transform.scale(
-            self.screen, pygame.Vector2(self.screen.get_size()) / self._zoom
-        )
+        screen = pygame.transform.scale_by(self.screen, self._zoom_inv)
         for i, (img, pos) in enumerate(self._to_blit):
             self._to_blit[i] = (
                 img,
-                (pos[0] + self.scroll[0], pos[1] + self.scroll[1]),
+                pos + self.scroll,
             )
         screen.blits(self._to_blit, 0)
         self._to_blit *= 0
         pygame.transform.scale(screen, self.display.get_size(), self.display)
 
-        if full_screen:
+        # debug
+        # for rect in self._the_dirty_rects:
+        #    pygame.draw.rect(self.display, (255, 255, 255), rect, 1)
+        # gubed
+
+        if full_screen and self._zoom_inv != 1.0:
             pygame.display.flip()
         else:
             pygame.display.update(self._the_dirty_rects)
         self._the_dirty_rects *= 0
 
-    def play_cutscene(self, name: str) -> list[list[int, int]]:
+    def play_cutscene(self, name: str) -> list[pygame.Vector2]:
         points = self.cutscenes[name].curve
         for i, point in enumerate(points):
-            points[i] = [
+            points[i] = pygame.Vector2(
                 normalize(points[0][0], point[0]),
                 normalize(points[0][1], point[1]),
-            ]
+            )
 
         return_points = []
         last_point = self.scroll
@@ -105,10 +116,14 @@ class Camera:
 
         self.current_points = iter(return_points)
         self.lock()
+        self._the_dirty_rects.append(pygame.Rect(0, 0, *self.display.get_size()))
         return return_points
 
-    def add_update_rects(self, rects: list[pygame.Rect] | tuple[pygame.Rect]):
+    def add_update_rects(self, rects: list[pygame.Rect]):
         self._the_dirty_rects.extend(rects)
+
+    def add_update_rect(self, rect: pygame.Rect):
+        self._the_dirty_rects.append(rect)
 
     def render(
         self,
@@ -117,42 +132,42 @@ class Camera:
     ):
         self._to_blit.append((surf, pos))
 
-    def fill(self, r, g, b):
-        self.screen.fill((r, g, b))
-
     def zoom_to(self, flt: float):
         if not self._locked:
             if flt >= MIN_ZOOM:
-                self._zoom = flt
+                self._zoom_inv = 1 / flt
 
     def zoom_by(self, flt: float):
         if not self._locked:
-            if not (flt < 0 and self._zoom <= MIN_ZOOM):
-                self._zoom += flt
+            if not (flt < 0 and self._zoom_inv <= MIN_ZOOM):
+                self._zoom_inv += 1 / (1 / self._zoom_inv + flt)
 
     def get_zoom(self) -> float:
-        return self._zoom
+        return self._zoom_inv
 
     def move_by(self, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
         if not self._locked:
+            self._the_dirty_rects.append(pygame.Rect(0, 0, *self.display.get_size()))
             self.scroll[0] += pos[0]
             self.scroll[1] += pos[1]
 
     def move_to(self, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
         if not self._locked:
-            self.scroll = pos[:2]
+            self._the_dirty_rects.append(pygame.Rect(0, 0, *self.display.get_size()))
+            self.scroll = pygame.Vector2(pos[:2])
 
     def center(self, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
         if not self._locked:
-            self.scroll = [
+            self._the_dirty_rects.append(pygame.Rect(0, 0, *self.display.get_size()))
+            self.scroll = pygame.Vector2(
                 self.screen.get_width() // 2 - pos[0],
                 self.screen.get_height() // 2 - pos[1],
-            ]
+            )
 
     def get_centre(self) -> tuple[int, int]:
         return (
-            self.screen.get_width() // 2 - self.scroll[0],
-            self.screen.get_height() // 2 - self.scroll[1],
+            self.screen.get_width() // 2 - int(self.scroll[0]),
+            self.screen.get_height() // 2 - int(self.scroll[1]),
         )
 
     def get_background(self) -> tuple[int, int, int]:
@@ -160,7 +175,7 @@ class Camera:
 
     def set_background(self, colour):
         self._bgc = colour
-        self._the_dirty_rects.append([0, 0, *self.screen.get_size()])
+        self._the_dirty_rects.append(pygame.Rect(0, 0, *self.display.get_size()))
 
     def lock(self):
         self._locked = True

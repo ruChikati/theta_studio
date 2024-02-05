@@ -28,7 +28,7 @@ class VerletObject:
 
     def update(self, dt: float):
         vel = self.pos - self.prev_pos
-        self.prev_pos = self.pos
+        self.prev_pos = self.pos.copy()
         self.pos += vel + self.accel * dt * dt
         self.accel = pygame.Vector2(0, 0)
 
@@ -41,7 +41,7 @@ class VerletObject:
 
 
 class PhysicsSolver:
-    gravity = pygame.Vector2(0, 10)
+    gravity = pygame.Vector2(0, 1)
 
     def __init__(
         self,
