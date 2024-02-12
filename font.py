@@ -2,7 +2,7 @@ import os
 
 import pygame
 
-from .funcs import clip, read_file, write_file
+from .utils import clip, read_file, write_file
 
 
 class ForbiddenCharacterError(Exception):

@@ -1,7 +1,7 @@
 import pygame
 
 from . import level
-from .funcs import distance2
+from .utils import distance2
 
 
 class VerletObject:

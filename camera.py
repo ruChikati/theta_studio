@@ -2,7 +2,7 @@ import os
 
 import pygame
 
-from .funcs import normalize
+from .utils import normalize
 
 MIN_ZOOM = 0.1
 
@@ -93,7 +93,7 @@ class Camera:
         #    pygame.draw.rect(self.display, (255, 255, 255), rect, 1)
         # gubed
 
-        if full_screen and self._zoom_inv != 1.0:
+        if full_screen or self._zoom_inv != 1.0:
             pygame.display.flip()
         else:
             pygame.display.update(self._the_dirty_rects)

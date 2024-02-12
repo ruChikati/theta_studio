@@ -2,7 +2,7 @@ import os
 
 import pygame
 
-from .funcs import read_json, sum_list, write_json
+from .utils import read_json, sum_list, write_json
 
 
 class FileTypeError(Exception):

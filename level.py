@@ -2,7 +2,7 @@ from os import listdir, sep
 
 import pygame
 
-from .funcs import read_json
+from .utils import read_json
 
 CHUNK_SIZE = 16
 

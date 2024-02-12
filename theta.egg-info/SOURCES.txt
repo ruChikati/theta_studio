@@ -1,6 +1,0 @@
-README.md
-setup.py
-theta.egg-info/PKG-INFO
-theta.egg-info/SOURCES.txt
-theta.egg-info/dependency_links.txt
-theta.egg-info/top_level.txt

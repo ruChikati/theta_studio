@@ -1,5 +1,5 @@
 from os import sep as _sep
-from . import animation, camera, font, funcs, input, level, particle, physics, sfx, ui
+from . import animation, camera, font, utils, input, level, particle, physics, sfx, ui
 from .entity import Entity, SpriteStackEntity
 from .game import Game
 
