@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="theta_studio",
+    name="theta",
     version="0.1.0",
     packages=find_packages(),
     author="ruChikati",

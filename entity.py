@@ -16,9 +16,13 @@ class Entity(physics.VerletObject):
         self.action = "idle" if self.anims else None
         self.img = self.anims[self.action].get_img() if self.anims else None
 
-    def update(self, dt):
+    def update(self, dt, decel=0):
         old_rect = self.rect.copy()
         vel = self.pos - self.prev_pos
+
+        if self.accel == pygame.Vector2(0, 0) and self.pos != self.prev_pos:
+            self.accelerate(vel.normalize() * -decel)
+
         self.prev_pos = self.pos.copy()
         self.pos += vel + self.accel * dt * dt
         self.rect.topleft = self.pos

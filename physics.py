@@ -1,7 +1,6 @@
 import pygame
 
 from . import level
-from .utils import distance2
 
 
 class VerletObject:
@@ -76,19 +75,17 @@ class PhysicsSolver:
                     continue
                 distv = obj2.pos - obj.pos
                 r1 = max(
-                    distance2(obj.pos + pygame.Vector2(obj.w / 2, obj.h / 2), obj.pos),
-                    distance2(
+                    obj.pos.distance_to(obj.pos + pygame.Vector2(obj.w / 2, obj.h / 2)),
+                    (obj.pos + pygame.Vector2(obj.w, 0)).distance_to(
                         obj.pos + pygame.Vector2(obj.w / 2, obj.h / 2),
-                        obj.pos + pygame.Vector2(obj.w, 0),
                     ),
                 )
                 r2 = max(
-                    distance2(
+                    obj2.pos.distance_to(
                         obj2.pos + pygame.Vector2(obj2.w / 2, obj2.h / 2), obj2.pos
                     ),
-                    distance2(
+                    (obj2.pos + pygame.Vector2(obj2.w, 0)).distance_to(
                         obj2.pos + pygame.Vector2(obj2.w / 2, obj2.h / 2),
-                        obj2.pos + pygame.Vector2(obj2.w, 0),
                     ),
                 )
                 obj.pos -= r1 - distv / 2
