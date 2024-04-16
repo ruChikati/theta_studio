@@ -44,14 +44,13 @@ class CameraCutscene:
 
 
 class Camera:
-    DATA_PATH = f".{os.sep}data{os.sep}cutscenes{os.sep}"
-
-    def __init__(self, w: int, h: int, cutscene_path=DATA_PATH, bg_colour=(0, 0, 0)):
+    def __init__(self, w: int, h: int, bg_colour=(0, 0, 0)):
         self.display = pygame.display.set_mode((w, h), pygame.RESIZABLE)
         self.screen = pygame.Surface((w, h))
         self.scroll = pygame.Vector2(0, 0)
         self._bgc = bg_colour
-        self.cutscene_path = cutscene_path
+        from .game import CAMERA_PATH
+        self.cutscene_path = CAMERA_PATH
         self._locked = False
         self.cutscenes = {}
         self._zoom_inv = 1.0

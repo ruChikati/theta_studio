@@ -1,0 +1,22 @@
+[project]
+name = "theta"
+version = "0.0.1"
+authors = [
+  { name="ruChikati", email="rushil.cn@gmail.com" },
+]
+description = "A 2D game framework which enables freedom to implement systems"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/ruChikati/theta_studio"
+
+[build-system]
+requires = ["hatchling", "pygame-ce"]
+build-backend = "hatchling.build"
+
+[tool]

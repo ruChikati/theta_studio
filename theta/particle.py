@@ -5,7 +5,7 @@ import pygame
 
 
 class Particle:
-    def __init__(
+    def __init__(  # TODO: convert to Vector2
         self,
         colour,
         pos,

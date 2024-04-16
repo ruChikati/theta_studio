@@ -223,21 +223,19 @@ class SpriteStack:
 
 
 class AnimationManager:
-    DATA_PATH = f".{os.sep}data{os.sep}gfx{os.sep}anims{os.sep}"
-    SS_PATH = f".{os.sep}data{os.sep}gfx{os.sep}spritestacks{os.sep}"
-
-    def __init__(self, path=DATA_PATH, ss_path=SS_PATH):
-        self.path = path
-        self.ss_path = ss_path
+    def __init__(self):
+        from .game import ANIM_PATH, SS_PATH
+        self.path = ANIM_PATH
+        self.ss_path = SS_PATH
         self.anims = {}
         self.spritestacks = {}
-        for directory in os.listdir(path):
+        for directory in os.listdir(self.path):
             if directory[0] != ".":
-                self.anims[directory] = Animation(f"{path}{directory}")
+                self.anims[directory] = Animation(f"{self.path}{directory}")
                 # anims are stored as sortable images, in dirs named obj;anim, along with a config.json file
-        for directory in os.listdir(path):
+        for directory in os.listdir(self.path):
             if directory[0] != ".":
-                self.spritestacks[directory] = SpriteStack(f"{ss_path}{directory}")
+                self.spritestacks[directory] = SpriteStack(f"{self.ss_path}{directory}")
 
     def get_anims(self, name: str) -> dict[str:Animation]:
         dct = {}

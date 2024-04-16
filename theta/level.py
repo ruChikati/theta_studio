@@ -50,9 +50,9 @@ class Tile:
             other.is_solid,
         )
 
-    def update(self, surf=None):
+    def update(self, surf: pygame.Surface = None):
         if surf is not None:
-            surf.blit(self.img)
+            surf.blit(self.img, (self.x, self.y))
         else:
             self.game.camera.add_update_rects(
                 [pygame.Rect(self.x, self.y, self.w, self.h)]
@@ -66,8 +66,8 @@ class Tile:
             return self.rect.colliderect(rect.rect)
 
     @property
-    def pos(self):
-        return [self.x, self.y]
+    def pos(self) -> pygame.Vector2:
+        return pygame.Vector2(self.x, self.y)
 
     @pos.setter
     def pos(self, pos: tuple[int, int] | list[int, int] | pygame.Vector2):
@@ -75,7 +75,7 @@ class Tile:
         self.y = pos[1]
 
     @property
-    def rect(self):
+    def rect(self) -> pygame.Rect:
         return pygame.Rect(self.x, self.y, self.w, self.h)
 
     @rect.setter
@@ -147,20 +147,20 @@ class Chunk:
         except AttributeError:
             return False
 
-    def update(self, surf: pygame.Surface = None, tile_type=""):
-        """:type: '' for all tiles, 's' for solid tiles, 'u' for unsolid tiles, 'i' for invisible tiles, 'v' for visible tiles"""
+    def update(self, surf: pygame.Surface = None, tile_type: str = ""):
+        """:type: '' for all tiles, 's' for solid tiles, 'u' for unsolid tiles, 'x' for invisible tiles, 'v' for visible tiles"""
         if tile_type == "":
             for tile in self.tiles:
                 tile.update(surf)
         if "s" in tile_type:
             for tile in self.solid_tiles:
-                if (tile.is_invisible and "i" in tile_type) or (
+                if (tile.is_invisible and "x" in tile_type) or (
                     not tile.is_invisible and "v" in tile_type
                 ):
                     tile.update(surf)
         if "u" in tile_type:
             for tile in self.unsolid_tiles:
-                if (tile.is_invisible and "i" in tile_type) or (
+                if (tile.is_invisible and "x" in tile_type) or (
                     not tile.is_invisible and "v" in tile_type
                 ):
                     tile.update(surf)
@@ -196,12 +196,12 @@ class Chunk:
         return tiles
 
     @property
-    def rect(self):
+    def rect(self) -> pygame.Rect:
         return pygame.Rect((self.x, self.y), (self.size, self.size))
 
 
 class Level:
-    def __init__(self, chunk_list, game):
+    def __init__(self, chunk_list: list[Chunk], game):
         self.chunks = chunk_list
         for i, chunk in enumerate(self.chunks):
             self.chunks[i] = Chunk(chunk, game)
@@ -210,7 +210,7 @@ class Level:
         self.collision_mesh = self.get_collision_mesh()
         self.game = game
 
-    def get_chunks_at_points(self, points) -> list[Chunk]:
+    def get_chunks_at_points(self, points: list | tuple) -> list[Chunk]:
         return_list = []
         for point in points:
             try:
@@ -228,7 +228,7 @@ class Level:
                 return_list.append(tile)
         return return_list
 
-    def get_collision_mesh(self, points=()) -> list[Tile]:
+    def get_collision_mesh(self, points: tuple | list = ()) -> list[pygame.Rect]:
         return_list = []
         if not points:
             for chunk in self.chunks:
@@ -240,19 +240,19 @@ class Level:
                     return_list.append(tile)
         return return_list
 
-    def update(self, surf=None, tile_type=""):
+    def update(self, surf: pygame.Surface = None, tile_type: str = ""):
         for chunk in self.chunks:
             chunk.update(surf, tile_type)
 
 
 class World:  # TODO: maybe move entities to the chunk level? easier to compute with only chunks
-    def __init__(self, name: str, chunk_list, game, entities=()):
+    def __init__(self, name: str, chunk_list: list[Chunk], game, entities=()):
         self.name = name
         self.level = Level(chunk_list, game)
         self.entities = list(entities)
         self.game = game
 
-    def update(self, dt: float, surf=None, tile_type=""):
+    def update(self, dt: float, surf: pygame.Surface = None, tile_type: str = ""):
         self.level.update(surf, tile_type)
         for entity in self.entities:
             if entity.is_active:
@@ -263,21 +263,20 @@ class World:  # TODO: maybe move entities to the chunk level? easier to compute 
 
 
 class WorldManager:
-    DATA_PATH = f".{sep}data{sep}worlds{sep}"
-
-    def __init__(self, game, path=DATA_PATH):
-        self.path = path
+    def __init__(self, game):
+        from .game import WORLD_PATH
+        self.path = WORLD_PATH
         self.worlds = {}
-        for world in listdir(path):
+        for world in listdir(self.path):
             if not world.startswith("."):
-                data = read_json(f"{path}{world}")
+                data = read_json(f"{self.path}{world}")
                 self.worlds[world.split(".")[0]] = World(
                     world.split(".")[0], data["level"]["chunks"], game, data["entities"]
                 )
         self.active_world = "0"
         self.game = game
 
-    def update(self, dt: float, surf=None, tile_type=""):
+    def update(self, dt: float, surf: pygame.Surface = None, tile_type: str = ""):
         self.worlds[self.active_world].update(dt, surf, tile_type)
 
     def get_active_world(self) -> World:

@@ -7,7 +7,7 @@ from .input import Event
 
 
 class UIElement:
-    def __init__(self, x, y, w, h, colour, event, game):
+    def __init__(self, x: int, y: int, w: int, h: int, colour, event: Event, game):
         self.rect = pygame.Rect(x, y, w, h)
         self.color = colour
         self.surf = pygame.Surface(self.rect.size, pygame.SRCALPHA)
@@ -16,7 +16,7 @@ class UIElement:
         self.is_visible = False
         self.game = game
 
-    def update(self, surf, m_pos, m_clicked):
+    def update(self, surf: pygame.Surface, m_pos: pygame.Vector2, m_clicked: bool):
         if self.is_visible:
             surf.blit(self.surf, self.rect.topleft)
 
@@ -29,23 +29,24 @@ class Page:
         self.elements = elements
         self.is_active = False
 
-    def update(self, surf, m_pos, m_clicked):
+    def update(self, surf: pygame.Surface, m_pos: pygame.Vector2, m_clicked: bool):
         for element in self.elements:
             element.update(surf, m_pos, m_clicked)
 
 
 class UIManager:
-    DATA_PATH = f".{os.sep}data{os.sep}ui{os.sep}"
-
-    def __init__(self, game, path=DATA_PATH):
+    def __init__(self, game):
         self.pages = {"": Page([])}
-        self.path = path
-        for file in os.listdir(path):
+        from .game import UI_PATH
+        self.path = UI_PATH
+        for file in os.listdir(self.path):
             if file[0] != ".":
                 self.pages[file.split(".")[0]] = Page(
                     [
                         UIElement(
-                            *f[:-1], Event(game.input.custom_event_type(), *f[-1]), game
+                            *(f[:-1]),
+                            Event(game.input.custom_event_type(), *f[-1]),
+                            game,
                         )
                         for f in read_json(file)
                     ]
@@ -53,5 +54,5 @@ class UIManager:
                 # JSON file contains an array of arrays `f` which specify the arguments of UIElement, the last item of `f` is an array containing all arguments to the Event, except the type
         self.active_page = ""
 
-    def update(self, surf, m_pos, m_clicked):
+    def update(self, surf: pygame.Surface, m_pos: pygame.Vector2, m_clicked: bool):
         self.pages[self.active_page].update(surf, m_pos, m_clicked)

@@ -3,6 +3,7 @@ import math
 
 import pygame
 
+# TODO: type hints for entire project and documentation
 
 def read_file(path):
     with open(path, "r") as f:
