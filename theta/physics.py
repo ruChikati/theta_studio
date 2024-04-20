@@ -31,12 +31,13 @@ class VerletObject:
         self.pos += vel + self.accel * dt * dt
         self.accel = pygame.Vector2(0, 0)
 
-    def accelerate(self, acc: pygame.Vector2):
-        self.accel += acc
+    def accelerate(self, acc: pygame.Vector2, max_vel: float = float("inf")):
+        if (self.pos - self.prev_pos).magnitude() <= max_vel:
+            self.accel += acc
 
-    def teleport(self, pos: pygame.Vector2):
+    def teleport(self, pos: pygame.Vector2, keep_vel: bool = False):
+        self.prev_pos = self.prev_pos + (pos - self.pos) if keep_vel else pos
         self.pos = pos
-        self.prev_pos = pos
 
 
 class PhysicsSolver:
@@ -66,7 +67,7 @@ class PhysicsSolver:
     def reset(self, objects: list[VerletObject] | tuple[VerletObject] = ()):
         self.objects = objects
 
-    def handle_collisions(self):
+    def handle_collisions(self):  # TODO: make this better, use chunks
         for obj in self.objects:
             for obj2 in self.objects:
                 if obj is obj2 or not pygame.Rect(obj.pos, (obj.w, obj.h)).colliderect(

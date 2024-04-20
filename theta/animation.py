@@ -225,6 +225,7 @@ class SpriteStack:
 class AnimationManager:
     def __init__(self):
         from .game import ANIM_PATH, SS_PATH
+
         self.path = ANIM_PATH
         self.ss_path = SS_PATH
         self.anims = {}

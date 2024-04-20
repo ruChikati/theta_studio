@@ -100,6 +100,7 @@ SysFont = pygame.font.SysFont
 class FontManager:
     def __init__(self, bar_colour=(128, 128, 128), colourkey=(0, 0, 0)):
         from .game import FONT_PATH
+
         self.path = FONT_PATH
         self.fonts = {}
         order = None

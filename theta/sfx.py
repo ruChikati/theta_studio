@@ -10,6 +10,7 @@ pygame.mixer.init()
 class SFXManager:
     def __init__(self, num_channels: int = 63):
         from .game import SFX_PATH
+
         self.path = SFX_PATH
         self.sounds = {}
         self.music = {}
@@ -39,7 +40,7 @@ class SFXManager:
             pygame.mixer.find_channel().play(
                 random.choice(self.sounds[name]), loops, maxtime, fade_ms
             )
-        except KeyError:
+        except (KeyError, AttributeError):
             pass
 
     def start_music(self):

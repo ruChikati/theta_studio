@@ -38,6 +38,7 @@ class UIManager:
     def __init__(self, game):
         self.pages = {"": Page([])}
         from .game import UI_PATH
+
         self.path = UI_PATH
         for file in os.listdir(self.path):
             if file[0] != ".":

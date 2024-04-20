@@ -50,6 +50,7 @@ class Camera:
         self.scroll = pygame.Vector2(0, 0)
         self._bgc = bg_colour
         from .game import CAMERA_PATH
+
         self.cutscene_path = CAMERA_PATH
         self._locked = False
         self.cutscenes = {}

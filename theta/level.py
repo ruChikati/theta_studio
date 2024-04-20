@@ -265,6 +265,7 @@ class World:  # TODO: maybe move entities to the chunk level? easier to compute 
 class WorldManager:
     def __init__(self, game):
         from .game import WORLD_PATH
+
         self.path = WORLD_PATH
         self.worlds = {}
         for world in listdir(self.path):
