@@ -203,8 +203,6 @@ class Chunk:
 class Level:
     def __init__(self, chunk_list: list[Chunk], game):
         self.chunks = chunk_list
-        for i, chunk in enumerate(self.chunks):
-            self.chunks[i] = Chunk(chunk, game)
         self.chunks_dict = {chunk.chunk_pos: chunk for chunk in self.chunks}
         self.chunk_size = CHUNK_SIZE
         self.collision_mesh = self.get_collision_mesh()

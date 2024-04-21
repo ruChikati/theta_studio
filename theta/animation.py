@@ -2,6 +2,7 @@ import os
 
 import pygame
 
+from .entity import Entity, SpriteStackEntity
 from .utils import read_json, sum_list, write_json
 
 
@@ -254,3 +255,15 @@ class AnimationManager:
 
     def new(self, path: str):
         self.anims[path.split(os.sep)[-1]] = Animation(path)
+
+    def create_entity(self, x: int, y: int, w: int, h: int, name: str, game) -> Entity:
+        e = Entity(x, y, w, h, name, self.get_anims(name), game)
+        game.solver.add_objects([e])
+        return e
+
+    def create_spritestack_entity(
+        self, x: int, y: int, w: int, h: int, name: str, game
+    ) -> SpriteStackEntity:
+        e = SpriteStackEntity(x, y, w, h, name, self.get_spritestacks(name), game)
+        game.solver.add_objects([e])
+        return e
