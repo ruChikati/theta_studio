@@ -2,30 +2,23 @@ import os
 
 import pygame
 
-from .utils import normalize
-
 MIN_ZOOM = 0.1
 
 
-def _bezier_curve_point(point_list, t: float, x_or_y: 0 | 1):
+def _bezier_curve_point(point_list: list[pygame.Vector2], t: float) -> pygame.Vector2:
     if len(point_list) == 1:
-        return point_list[0][x_or_y]
+        return point_list[0]
     return round(
-        _bezier_curve_point(point_list[:-1], t, x_or_y) * (1 - t)
-        + _bezier_curve_point(point_list[1:], t, x_or_y) * t,
+        _bezier_curve_point(point_list[:-1], t) * (1 - t)
+        + _bezier_curve_point(point_list[1:], t) * t,
         5,
     )
 
 
-def bezier_curve(def_points, speed=0.01):
+def bezier_curve(def_points: list[pygame.Vector2], speed=0.01) -> list[pygame.Vector2]:
     points = []
     for t in [_ * speed for _ in range(int((1 + speed * 2) // speed))]:
-        points.append(
-            pygame.Vector2(
-                _bezier_curve_point(def_points, t, 0),
-                _bezier_curve_point(def_points, t, 1),
-            )
-        )
+        points.append(_bezier_curve_point(def_points, t))
     return points
 
 
@@ -38,7 +31,9 @@ class CameraCutscene:
             self.path, "r"
         ) as data:  # stored as: num1x,num1y/num2x,num2y...;speed
             for p in data.read().split(";")[0].split("/"):
-                self.points.append((float(p.split(",")[0]), float(p.split(",")[1])))
+                self.points.append(
+                    pygame.Vector2(float(p.split(",")[0]), float(p.split(",")[1]))
+                )
             self.speed = float(data.read().split(";")[-1])
             self.curve = bezier_curve(self.points, self.speed)
 
@@ -100,18 +95,11 @@ class Camera:
         self._the_dirty_rects *= 0
 
     def play_cutscene(self, name: str) -> list[pygame.Vector2]:
-        points = self.cutscenes[name].curve
-        for i, point in enumerate(points):
-            points[i] = pygame.Vector2(
-                normalize(points[0][0], point[0]),
-                normalize(points[0][1], point[1]),
-            )
-
         return_points = []
         last_point = self.scroll
-        for point in points:
-            last_point[0] += point[0]
-            last_point[1] += point[1]
+
+        for point in self.cutscenes[name].curve:
+            last_point += point
             return_points.append(last_point)
 
         self.current_points = iter(return_points)

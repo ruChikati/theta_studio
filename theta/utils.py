@@ -3,26 +3,31 @@ import math
 
 import pygame
 
+
 # TODO: type hints for entire project and documentation
 
 
-def read_file(path: str) -> str:
-    with open(path, "r") as f:
+def read_file(path: str, binary: bool = False) -> str | bytes:
+    """Reads the given file and returns the data"""
+    with open(path, "rb" if binary else "r") as f:
         data = f.read()
     return data
 
 
-def write_file(path: str, data: str):
-    with open(path, "w") as f:
+def write_file(path: str, data: str | bytes, binary: bool = False):
+    """Writes the given data to the file"""
+    with open(path, "wb" if binary else "w") as f:
         f.write(data)
 
 
 def write_json(path: str, data, indent: int = 1):
+    """Writes python objects (lists, tuples, dicts) into a JSON format at a given path"""
     with open(path, "x") as f:
         f.write(json.dumps(data, indent=indent))
 
 
 def read_json(path: str):
+    """Reads a JSON file into python data"""
     with open(path, "r") as f:
         data = f.read()
     data = json.loads(data)
@@ -39,7 +44,7 @@ def sum_list(list_: list, sort: bool = True) -> list:
     return return_list
 
 
-def string_of_(var):
+def string_of_(var) -> str:
     """:returns: string of the name of the given variable"""
     return f"{var=}".split("=")[0]
 
@@ -75,6 +80,7 @@ def single_true(iterable):
 
 
 def prime_generator(end: int):
+    """Generates all primes until a given number"""
     for n in range(2, end):
         for x in range(2, n):
             if n % x == 0:
@@ -84,6 +90,7 @@ def prime_generator(end: int):
 
 
 def is_prime(n: int) -> bool:
+    """Checks if a number is prime"""
     if n <= 3:
         return n > 1
     if not (n % 2 and n % 3):
@@ -96,7 +103,11 @@ def is_prime(n: int) -> bool:
     return True
 
 
-def swap_colour(surf: pygame.Surface, old_colour: tuple[int, int, int], new_colour: tuple[int, int, int]) -> pygame.Surface:
+def swap_colour(
+    surf: pygame.Surface,
+    old_colour: tuple[int, int, int],
+    new_colour: tuple[int, int, int],
+) -> pygame.Surface:
     """Swaps one colour for a new one on a pygame.Surface"""
     surf = surf.copy()
     surf.set_colorkey(old_colour)
@@ -107,10 +118,13 @@ def swap_colour(surf: pygame.Surface, old_colour: tuple[int, int, int], new_colo
 
 
 def colored_text(text: str, r: int, g: int, b: int) -> str:
+    """:returns: a string which when printed, is printed in a colour"""
     return f"\033[38;2;{r};{g};{b}m{text} \033[38;2;255;255;255m"
 
 
-def centre_blit(source: pygame.Surface, surf: pygame.Surface, dest: tuple[int, int] = (0, 0)):
+def centre_blit(
+    source: pygame.Surface, surf: pygame.Surface, dest: tuple[int, int] = (0, 0)
+):
     """Blits the centre of source onto surf at dest"""
     surf.blit(
         source, (dest[0] - source.get_width() // 2, dest[1] - source.get_height() // 2)
@@ -118,17 +132,8 @@ def centre_blit(source: pygame.Surface, surf: pygame.Surface, dest: tuple[int, i
 
 
 def centre_of_rect(rect: pygame.Rect) -> tuple[int, int]:
+    """:returns: the centre of a given rect"""
     return rect.x + rect.w // 2, rect.y + rect.h // 2
-
-
-def normalize(num: int | float, val: int | float) -> int | float:
-    if num > val:
-        num -= val
-    elif num < val:
-        num += val
-    elif num == val:
-        num = 0
-    return num
 
 
 def normalize_list(lst: list) -> list:
@@ -143,23 +148,29 @@ def normalize_list(lst: list) -> list:
 
 
 def sum_of_lists(big_list: list[list]) -> list:
+    """compiles a list of lists into one single list"""
     return_list = []
     for small_list in big_list:
         return_list += small_list
     return return_list
 
 
-def angle2(point1: pygame.Vector2 | tuple[int, int], point2: pygame.Vector2 | tuple[int, int]) -> float:
+def angle2(
+    point1: pygame.Vector2 | tuple[int, int], point2: pygame.Vector2 | tuple[int, int]
+) -> float:
     """:returns: angle made between the line passing through point1 and point2 and the x-axis, in radians"""
     if not point2[0] - point1[0]:
         return 0
     return math.atan2((point2[1] - point1[1]), (point2[0] - point1[0]))
 
+
 def magnitude(point: tuple[int | float]) -> float:
     """:returns: the magnitude of an n-dimensional point, works in general, so it's slow"""
     return sum(val**2 for val in point) ** 0.5
 
+
 def clip(surf: pygame.Surface, x: int, y: int, w: int, h: int) -> pygame.Surface:
+    """:returns: a subsurface of `surf` based on x, y, w, h"""
     handle_surf = surf.copy()
     handle_surf.set_clip(pygame.Rect(x, y, w, h))
     image = surf.subsurface(handle_surf.get_clip())
@@ -167,13 +178,17 @@ def clip(surf: pygame.Surface, x: int, y: int, w: int, h: int) -> pygame.Surface
 
 
 def clip_rect(surf: pygame.Surface, rect: pygame.Rect) -> pygame.Surface:
+    """:returns: a subsurface of `surf` based on a rect"""
     handle_surf = surf.copy()
     handle_surf.set_clip(rect)
     image = surf.subsurface(handle_surf.get_clip())
     return image.copy()
 
 
-def two_point_rect(point1: pygame.Vector2 | tuple[int, int], point2: pygame.Vector2 | tuple[int, int]) -> pygame.Rect:
+def two_point_rect(
+    point1: pygame.Vector2 | tuple[int, int], point2: pygame.Vector2 | tuple[int, int]
+) -> pygame.Rect:
+    """:returns: a rect with the two input points diagonal from each other"""
     return pygame.Rect(
         min(point1[0], point2[0]),
         min(point1[1], point2[1]),
