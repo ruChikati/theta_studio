@@ -4,9 +4,6 @@ import math
 import pygame
 
 
-# TODO: type hints for entire project and documentation
-
-
 def read_file(path: str, binary: bool = False) -> str | bytes:
     """Reads the given file and returns the data"""
     with open(path, "rb" if binary else "r") as f:

@@ -274,9 +274,17 @@ class WorldManager:
                 )
         self.active_world = "0"
         self.game = game
+        self.game.solver.reset()
+        self.game.solver.add_objects(self.worlds[self.active_world].entities)
 
     def update(self, dt: float, surf: pygame.Surface = None, tile_type: str = ""):
         self.worlds[self.active_world].update(dt, surf, tile_type)
 
     def get_active_world(self) -> World:
         return self.worlds[self.active_world]
+
+    def change_world(self, name: str) -> World:
+        self.active_world = name
+        self.game.solver.reset()
+        self.game.solver.add_objects(self.worlds[self.active_world].entities)
+        return self.get_active_world()

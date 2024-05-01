@@ -382,15 +382,10 @@ def custom_event_type() -> int:
 
 
 class Event:
-    def __init__(self, type, dict=None, **attributes):
-        if dict is None:
-            dict = {}
-        if dict:
-            self.attr = dict
-        elif attributes:
-            self.attr = attributes
-        else:
-            self.attr = {}
+    def __init__(self, type: int, attributes: dict | None = None, **kwargs):
+        self.attr = {}
+        self.attr.update(attributes if attributes is not None else {})
+        self.attr.update(kwargs)
         self.type = type
 
     def __getitem__(self, item):
@@ -1080,3 +1075,6 @@ class Input:
             return_list.append(event)
         self.posted_events *= 0
         return return_list
+
+    def get_mpos(self) -> tuple[int, int]:
+        return self.mx, self.my

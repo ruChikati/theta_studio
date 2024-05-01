@@ -41,7 +41,6 @@ class VerletObject:
 
 
 class PhysicsSolver:
-    gravity = pygame.Vector2(0, 1)
 
     def __init__(
         self,
@@ -54,6 +53,7 @@ class PhysicsSolver:
         self.lvl = lvl if lvl is not None else level.Level([], game)
         self.game = game
         self.steps = sub_steps
+        self.gravity = pygame.Vector2(0, 0)
 
     def add_objects(self, objects: list[VerletObject] | tuple[VerletObject]):
         self.objects.extend(objects)
@@ -95,7 +95,7 @@ class PhysicsSolver:
     def update(self, dt: float, collisions=True):
         for i in range(self.steps):
             for obj in self.objects:
-                obj.accelerate(PhysicsSolver.gravity)
+                obj.accelerate(self.gravity)
                 obj.update(dt / self.steps)
             if collisions:
                 self.handle_collisions()

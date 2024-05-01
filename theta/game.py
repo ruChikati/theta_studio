@@ -1,10 +1,9 @@
+from os import sep
 from time import time
 
 import pygame
-from os import sep
 
 from . import camera, input, physics, ui
-
 
 CAMERA_PATH = f".{sep}data{sep}cutscenes{sep}"
 FONT_PATH = f".{sep}data{sep}fonts{sep}"
@@ -53,3 +52,8 @@ class Game:
     @staticmethod
     def set_name(name: str):
         pygame.display.set_caption(name)
+
+    @staticmethod
+    def set_icon(path: str):
+        surf = pygame.image.load(path)
+        pygame.display.set_icon(surf)

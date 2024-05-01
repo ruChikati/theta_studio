@@ -235,7 +235,7 @@ class AnimationManager:
             if directory[0] != ".":
                 self.anims[directory] = Animation(f"{self.path}{directory}")
                 # anims are stored as sortable images, in dirs named obj;anim, along with a config.json file
-        for directory in os.listdir(self.path):
+        for directory in os.listdir(self.ss_path):
             if directory[0] != ".":
                 self.spritestacks[directory] = SpriteStack(f"{self.ss_path}{directory}")
 
