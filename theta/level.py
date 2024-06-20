@@ -270,7 +270,10 @@ class WorldManager:
             if not world.startswith("."):
                 data = read_json(f"{self.path}{world}")
                 self.worlds[world.split(".")[0]] = World(
-                    world.split(".")[0], data["level"]["chunks"], game, data["entities"]
+                    world.split(".")[0],
+                    [Chunk(d, game) for d in data["level"]["chunks"]],
+                    game,
+                    data["entities"],
                 )
         self.active_world = "0"
         self.game = game

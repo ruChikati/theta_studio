@@ -49,7 +49,7 @@ class PhysicsSolver:
         lvl: level.Level = None,
         sub_steps=1,
     ):
-        self.objects = objects
+        self.objects = list(objects)
         self.lvl = lvl if lvl is not None else level.Level([], game)
         self.game = game
         self.steps = sub_steps
@@ -65,7 +65,7 @@ class PhysicsSolver:
                     del v_obj
 
     def reset(self, objects: list[VerletObject] | tuple[VerletObject] = ()):
-        self.objects = objects
+        self.objects = list(objects)
 
     def handle_collisions(self):  # TODO: make this better, use chunks
         for obj in self.objects:

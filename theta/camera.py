@@ -83,12 +83,11 @@ class Camera:
         self._to_blit *= 0
         pygame.transform.scale(screen, self.display.get_size(), self.display)
 
-        # debug
-        # for rect in self._the_dirty_rects:
-        #    pygame.draw.rect(self.display, (255, 255, 255), rect, 1)
-        # gubed
-
-        if full_screen or self._zoom_inv != 1.0:
+        if (
+            full_screen
+            or self._zoom_inv != 1.0
+            or self.screen.get_size() != self.display.get_size()
+        ):
             pygame.display.flip()
         else:
             pygame.display.update(self._the_dirty_rects)

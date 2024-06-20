@@ -15,10 +15,10 @@ SS_PATH = f".{sep}data{sep}gfx{sep}spritestacks{sep}"
 
 
 class Game:
-    def __init__(self, fps=60):
+    def __init__(self, width=512, height=512, fps=60):
         self.ui = ui.UIManager(self)
         self.input = input.Input()
-        self.camera = camera.Camera(512, 512)
+        self.camera = camera.Camera(width, height)
         self.clock = pygame.time.Clock()
         self.fps = fps
         self.dt = 1.0
