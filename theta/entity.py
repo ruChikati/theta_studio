@@ -1,9 +1,44 @@
 import pygame
 
-from . import physics
+
+class VerletObject:
+    def __init__(
+        self,
+        curr_pos: pygame.Vector2,
+        prev_pos: pygame.Vector2,
+        accel: pygame.Vector2,
+        w=1,
+        h=1,
+    ):
+        self.pos = curr_pos
+        self.prev_pos = prev_pos
+        self.accel = accel
+        self.w = w
+        self.h = h
+
+    def __eq__(self, other):
+        return (self.pos, self.prev_pos, self.accel) == (
+            other.pos,
+            other.prev_pos,
+            other.accel,
+        )
+
+    def update(self, dt: float):
+        vel = self.pos - self.prev_pos
+        self.prev_pos = self.pos.copy()
+        self.pos += vel + self.accel * dt * dt
+        self.accel = pygame.Vector2(0, 0)
+
+    def accelerate(self, acc: pygame.Vector2, max_vel: float = float("inf")):
+        if (self.pos - self.prev_pos).magnitude_squared() <= max_vel**2:
+            self.accel += acc
+
+    def teleport(self, pos: pygame.Vector2, keep_vel: bool = False):
+        self.prev_pos = self.prev_pos + (pos - self.pos) if keep_vel else pos
+        self.pos = pos
 
 
-class Entity(physics.VerletObject):
+class Entity(VerletObject):
     def __init__(self, x: int, y: int, w: int, h: int, name: str, anims: dict, game):
         super().__init__(
             pygame.Vector2(x, y), pygame.Vector2(x, y), pygame.Vector2(0, 0), w, h
@@ -30,15 +65,25 @@ class Entity(physics.VerletObject):
         self.game.camera.add_update_rect(self.rect.union(old_rect).inflate(3, 3))
 
         self.accel = pygame.Vector2(0, 0)
-        self.img = self.anims[self.action].play(dt)
-        self.game.camera.render(self.img, self.pos)
+        if self.action is not None and self.img is not None:
+            self.anims[self.action].play(dt)
+            self.img = self.anims[self.action].get_img()
+            self.game.camera.render(self.img, self.pos)
+
+    def to_json_object(self) -> dict:
+        return {
+            "name": self.name,
+            "action": self.action,
+            "frame": self.anims[self.action].frame,
+            "rect": [self.rect.x, self.rect.y, self.rect.w, self.rect.h],
+        }
 
     @property
     def centre(self) -> pygame.Vector2:
         return self.pos + pygame.Vector2(self.w // 2, self.h // 2)
 
 
-class SpriteStackEntity(physics.VerletObject):
+class SpriteStackEntity(VerletObject):
     def __init__(
         self, x: int, y: int, w: int, h: int, name: str, spritestacks: dict, game
     ):
@@ -65,9 +110,20 @@ class SpriteStackEntity(physics.VerletObject):
         self.game.camera.add_update_rect(self.rect.union(old_rect).inflate(3, 3))
 
         self.accel = pygame.Vector2(0, 0)
-        self.spritestacks[self.action].render_to_game(
-            self.game, (self.pos.x + self.w // 2, self.pos.y + self.h // 2), self.rot
-        )
+        if self.action is not None:
+            self.spritestacks[self.action].render_to_game(
+                self.game,
+                (self.pos.x + self.w // 2, self.pos.y + self.h // 2),
+                self.rot,
+            )
 
     def rotate(self, angle: float):
         self.rot += angle
+
+    def to_json_object(self) -> dict:
+        return {
+            "name": self.name,
+            "action": self.action,
+            "rot": self.rot,
+            "rect": [self.rect.x, self.rect.y, self.rect.w, self.rect.h],
+        }

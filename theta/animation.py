@@ -3,23 +3,7 @@ import os
 import pygame
 
 from .entity import Entity, SpriteStackEntity
-from .utils import read_json, sum_list, write_json
-
-
-class FileTypeError(Exception):
-    def __init__(self, type):
-        self.type = type
-
-    def __str__(self):
-        return f"{self.type} type files cannot be processed"
-
-
-class LengthError(Exception):
-    def __init__(self, msg: str):
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg
+from .utils import FileTypeError, LengthError, read_json, sum_list, write_json
 
 
 class Animation:
@@ -72,14 +56,14 @@ class Animation:
         if self.frame_durations[-1] < self.frame:
             self._img = self.frames[-1]
 
-    def play(self, dt: float, fps=60):
+    def play(self, dt: float, fps=60) -> int:
         if not self.paused:
             self.frame += dt * fps * self.config["speed"]
         if self.config["loop"]:
             while self.frame > self.duration:
                 self.frame -= self.duration
         self._calcualate_img()
-        return self._img
+        return self.frame
 
     def get_img(self):
         return self._img
@@ -258,12 +242,10 @@ class AnimationManager:
 
     def create_entity(self, x: int, y: int, w: int, h: int, name: str, game) -> Entity:
         e = Entity(x, y, w, h, name, self.get_anims(name), game)
-        game.solver.add_objects([e])
         return e
 
     def create_spritestack_entity(
         self, x: int, y: int, w: int, h: int, name: str, game
     ) -> SpriteStackEntity:
         e = SpriteStackEntity(x, y, w, h, name, self.get_spritestacks(name), game)
-        game.solver.add_objects([e])
         return e

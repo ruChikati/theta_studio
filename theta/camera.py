@@ -38,7 +38,7 @@ class CameraCutscene:
             self.curve = bezier_curve(self.points, self.speed)
 
 
-class Camera:
+class Camera:  # TODO: better camera (GMTK-recommended)
     def __init__(self, w: int, h: int, bg_colour=(0, 0, 0)):
         self.display = pygame.display.set_mode((w, h), pygame.RESIZABLE)
         self.screen = pygame.Surface((w, h))

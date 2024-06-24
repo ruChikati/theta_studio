@@ -5,13 +5,13 @@ import pygame
 
 
 class Particle:
-    def __init__(  # TODO: convert to Vector2
+    def __init__(
         self,
-        colour,
-        pos,
-        vel,
-        size,
-        time_to_live,
+        colour: list[int, int, int] | tuple[int, int, int],
+        pos: pygame.Vector2,
+        vel: pygame.Vector2,
+        size: int,
+        time_to_live: int,
         shape="circle",
         width=0,
         shrink=False,
@@ -45,12 +45,9 @@ class Particle:
                     self.width,
                 )
 
-    def update(self, dt, vel_update=(0, 0)):
-        vel_update = (vel_update[0], vel_update[1] + self.gravity)
-        self.vel[0] += vel_update[0]
-        self.vel[1] += vel_update[1]
-        self.pos[0] += self.vel[0] * dt
-        self.pos[1] += self.vel[1] * dt
+    def update(self, dt, vel_update=pygame.Vector2(0, 0)):
+        self.vel += pygame.Vector2(vel_update.x, vel_update.y + self.gravity)
+        self.pos += self.vel * dt
         if self.shrink:
             size = self.size * self.timer // self.total_time
         else:
@@ -67,13 +64,13 @@ class Particle:
 class ParticleBurst:
     def __init__(
         self,
-        pos,
-        size,
-        amount,
-        colours,
-        time_to_live,
-        particle_time_to_live,
-        speed,
+        pos: pygame.Vector2,
+        size: int,
+        amount: int,
+        colours: list[list[int, int, int] | tuple[int, int, int]],
+        time_to_live: int,
+        particle_time_to_live: int,
+        speed: pygame.Vector2,
         type="burst",
         shape="circle",
         width=0,
@@ -111,13 +108,13 @@ class ParticleBurst:
                         self.particles.append(
                             Particle(
                                 random.choice(self.colours),
-                                [self.middle[0], self.middle[1]],
-                                [
-                                    (2 * random.random() - 1) * speed[0]
+                                self.middle.copy(),
+                                pygame.Vector2(
+                                    (2 * random.random() - 1) * speed.x
                                     + (2 * self.spread * random.random() - self.spread),
-                                    -2 * speed[1]
+                                    -2 * speed.y
                                     + (2 * self.spread * random.random() - self.spread),
-                                ],
+                                ),
                                 size,
                                 particle_time_to_live,
                                 shape,
@@ -132,8 +129,8 @@ class ParticleBurst:
                         self.particles.append(
                             Particle(
                                 random.choice(self.colours),
-                                [self.middle[0], self.middle[1]],
-                                [-2 * speed[0], speed[1]],
+                                self.middle.copy(),
+                                pygame.Vector2(-2 * speed.x, speed.y),
                                 size,
                                 particle_time_to_live,
                                 shape,
@@ -149,20 +146,20 @@ class ParticleBurst:
                         self.particles.append(
                             Particle(
                                 random.choice(self.colours),
-                                [
-                                    self.middle[0]
+                                pygame.Vector2(
+                                    self.middle.x
                                     - size // 2
                                     + (10 * random.random() - 5),
-                                    self.middle[1]
+                                    self.middle.y
                                     - size // 2
                                     + (10 * random.random() - 5),
-                                ],
-                                [
-                                    speed[0] * math.cos(theta) * random.random()
+                                ),
+                                pygame.Vector2(
+                                    speed.x * math.cos(theta) * random.random()
                                     + (2 * self.spread * random.random() - self.spread),
-                                    speed[1] * math.sin(theta) * random.random()
+                                    speed.y * math.sin(theta) * random.random()
                                     + (2 * self.spread * random.random() - self.spread),
-                                ],
+                                ),
                                 size,
                                 particle_time_to_live,
                                 shape,
@@ -172,8 +169,6 @@ class ParticleBurst:
                                 gravity,
                             )
                         )
-
-                # [self.middle[0], self.middle[1]], because it didn't work with just self.middle, I think it has sometyhing to do with references
 
     def update(self, dt, vel_update=(0, 0)):
         if self.time > 0:
@@ -190,20 +185,20 @@ class ParticleBurst:
                     self.particles.append(
                         Particle(
                             random.choice(self.colours),
-                            [
-                                self.middle[0]
+                            pygame.Vector2(
+                                self.middle.x
                                 - self.size // 2
                                 + (10 * random.random() - 5),
-                                self.middle[1]
+                                self.middle.y
                                 - self.size // 2
                                 + (10 * random.random() - 5),
-                            ],
-                            [
-                                self.speed[0] * math.cos(theta) * random.random()
+                            ),
+                            pygame.Vector2(
+                                self.speed.x * math.cos(theta) * random.random()
                                 + (2 * self.spread * random.random() - self.spread),
-                                self.speed[1] * math.sin(theta) * random.random()
+                                self.speed.y * math.sin(theta) * random.random()
                                 + (2 * self.spread * random.random() - self.spread),
-                            ],
+                            ),
                             self.size,
                             self.particle_time,
                             self.shape,
@@ -217,20 +212,20 @@ class ParticleBurst:
                     self.particles.append(
                         Particle(
                             random.choice(self.colours),
-                            [
-                                self.middle[0]
+                            pygame.Vector2(
+                                self.middle.x
                                 - self.size // 2
                                 + (10 * random.random() - 5),
-                                self.middle[1]
+                                self.middle.y
                                 - self.size // 2
                                 + (10 * random.random() - 5),
-                            ],
-                            [
-                                (2 * random.random() - 1) * self.speed[0]
+                            ),
+                            pygame.Vector2(
+                                (2 * random.random() - 1) * self.speed.x
                                 + (2 * self.spread * random.random() - self.spread),
-                                -2 * self.speed[1]
+                                -2 * self.speed.y
                                 + (2 * self.spread * random.random() - self.spread),
-                            ],
+                            ),
                             self.size,
                             self.particle_time,
                             self.shape,

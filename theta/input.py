@@ -1076,5 +1076,5 @@ class Input:
         self.posted_events *= 0
         return return_list
 
-    def get_mpos(self) -> tuple[int, int]:
-        return self.mx, self.my
+    def get_mpos(self) -> pygame.Vector2:
+        return pygame.Vector2(self.mx, self.my)

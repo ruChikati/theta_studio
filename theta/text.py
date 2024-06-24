@@ -2,16 +2,7 @@ import os
 
 import pygame
 
-from .utils import clip, read_file, write_file
-
-
-class ForbiddenCharacterError(Exception):
-    def __init__(self, char: str):
-        self.char = char
-        self.error_str = ", ".join(self.char)
-
-    def __str__(self):
-        return "Forbidden character(s): " + self.error_str
+from .utils import clip, ForbiddenCharacterError, read_file, write_file
 
 
 class Font:

@@ -2,10 +2,11 @@ import os
 
 import pygame
 
-from .utils import read_json
 from .input import Event
+from .utils import read_json
 
 
+# TODO: redo everything here
 class UIElement:
     def __init__(self, x: int, y: int, w: int, h: int, colour, event: Event, game):
         self.rect = pygame.Rect(x, y, w, h)
@@ -46,8 +47,8 @@ class UIManager:
                     [
                         UIElement(
                             *(f[:-1]),
-                            Event(game.input.custom_event_type(), *f[-1]),
-                            game,
+                            event=Event(game.input.custom_event_type(), *f[-1]),
+                            game=game,
                         )
                         for f in read_json(file)
                     ]

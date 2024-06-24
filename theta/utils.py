@@ -192,3 +192,28 @@ def two_point_rect(
         max(point1[0], point2[0]) - min(point1[0], point2[0]),
         max(point1[1], point2[1]) - min(point1[1], point2[1]),
     )
+
+
+class FileTypeError(Exception):
+    def __init__(self, type):
+        self.type = type
+
+    def __str__(self):
+        return f"{self.type} type files cannot be processed"
+
+
+class LengthError(Exception):
+    def __init__(self, msg: str):
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
+
+
+class ForbiddenCharacterError(Exception):
+    def __init__(self, char: str):
+        self.char = char
+        self.error_str = ", ".join(self.char)
+
+    def __str__(self):
+        return "Forbidden character(s): " + self.error_str
