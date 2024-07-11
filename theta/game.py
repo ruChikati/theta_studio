@@ -28,6 +28,7 @@ class Game:
         self.dt = 1.0
         self._last_time = time()
         self._t = 0
+        self.events = []
 
         self.entities = []
 
@@ -36,7 +37,8 @@ class Game:
         self._last_time = time()
 
         m_clicked = False
-        for event in self.input.get():
+        self.events = self.input.get()
+        for event in self.events:
             if event.type == input.MOUSEDOWN:
                 m_clicked = True
 

@@ -1,12 +1,19 @@
-from os import listdir, sep
+import csv
+import xml.etree.ElementTree as ET
+from os import mkdir, sep
+from os.path import isdir
 
 import pygame
 
 from .entity import Entity
-from .utils import read_json
+from .input import custom_event_type
+from .utils import FileTypeError, read_json, write_json
+
+SWITCH_LVL = custom_event_type()
 
 
 class Tile:
+
     def __init__(
         self,
         x: int,
@@ -45,6 +52,7 @@ class Level:
 
     def __init__(
         self,
+        name: str,
         size: pygame.Vector2,
         cell_size: pygame.Vector2,
         tiles: list[Tile] = None,
@@ -52,14 +60,19 @@ class Level:
     ):
         self.size = size
         self.cell_size = cell_size
+        self.name = name
 
-        if not (size.y % cell_size.y) or not (size.x % cell_size.x):
-            raise ArithmeticError("Cell size doesn't match level size!")
+        self.entitites = entities
+        self.tiles = tiles
+
+        assert not (
+            (size.y % cell_size.y) or (size.x % cell_size.x)
+        ), f"Cell size doesn't match level size!\n\t-> Cellsize: {cell_size}\tLevelsize: {size}"
 
         self.objs = (tiles if tiles is not None else []) + (
             entities if entities is not None else []
         )
-        self.cells = [[]] * (size.x // cell_size.x) * (size.y // cell_size.y)
+        self.cells = [[]] * ((size.x // cell_size.x) * (size.y // cell_size.y))
 
         for obj in self.objs:
             self.insert(obj)
@@ -127,27 +140,90 @@ class Level:
 
 
 class LevelManager:
+
     def __init__(self, game):
         from .game import LVL_PATH
 
-        self.lvls = {}
+        self.LVL_PATH = LVL_PATH
+        mkdir(LVL_PATH + "caches")
         self.current_lvl = None
-        for file in listdir(LVL_PATH):
-            raw_data = read_json(f"{LVL_PATH}{sep}{file}")
-            for i, t in enumerate(raw_data["tiles"]):
-                raw_data["tiles"][i] = Tile(*t, game)
-            for i, e in enumerate(raw_data["entities"]):
-                raw_data["entities"][i] = game.anim.create_entity(*e, game)
-
-            self.lvls[file.split(".")[0]] = Level(
-                pygame.Vector2(raw_data["size"]),
-                pygame.Vector2(raw_data["cell_size"]),
-                raw_data["tiles"],
-                raw_data["enitities"],
-            )
+        self.game = game
 
     def update(self, dt: float):
-        self.lvls[self.current_lvl].update(dt)
+        if self.current_lvl is not None:
+            self.current_lvl.update(dt)
+        for event in self.game.events:
+            if event.type == SWITCH_LVL:
+                self.switch_lvl(event.name)
 
     def switch_lvl(self, name: str):
-        self.current_lvl = name
+        self.cache(self.current_lvl)
+        self.current_lvl = self.load_lvl(name)
+
+    def load_lvl(self, name: str) -> Level:
+        if isdir(self.LVL_PATH + sep + "cache" + name):
+            entities = read_json(
+                self.LVL_PATH + sep + "cache" + name + sep + "entities.json"
+            )
+        else:
+            entities = read_json(self.LVL_PATH + sep + name + sep + "entities.json")
+
+        ts_data = ET.parse(self.LVL_PATH + sep + name + sep + "tileset.tsx")
+        map_data = ET.parse(self.LVL_PATH + sep + name + sep + "map.tmx")
+
+        cell_size = pygame.Vector2(
+            int(map_data.getroot()[0][0].attrib["width"]),
+            int(map_data.getroot()[0][0].attrib["height"]),
+        )
+        size = cell_size.elementwise() * pygame.Vector2(
+            int(map_data.getroot().attrib["tilewidth"]),
+            int(map_data.getroot().attrib["tileheight"]),
+        )
+
+        if map_data.getroot()[2][0].attrib["encoding"] != "csv":
+            raise FileTypeError(
+                "Data at"
+                + self.LVL_PATH
+                + sep
+                + name
+                + sep
+                + "map.tmx"
+                + " is not in a csv format"
+            )
+        tiles = []
+        tile_map = {}
+        tile_size = pygame.Vector2(
+            int(ts_data.getroot().attrib["tilewidth"]),
+            int(ts_data.getroot().attrib["tileheight"]),
+        )
+        for tile in ts_data.getroot():
+            if tile.tag == "tile":
+                tile_map[tile.attrib["id"]] = tile[0].attrib["source"]
+
+        for chunk in map_data.getroot()[2][0]:
+            tile_pos = list(csv.reader(chunk.text.split("\n")[1:-1]))
+            chunk_pos = pygame.Vector2(int(chunk.attrib["x"]), int(chunk.attrib["y"]))
+            for x, row in enumerate(tile_pos):
+                for y, tile_id in enumerate(row):
+                    if tile_id:
+                        tiles.append(
+                            Tile(
+                                int((chunk_pos.x + x) * tile_size.x),
+                                int((chunk_pos.y + y) * tile_size.y),
+                                int(tile_size.x),
+                                int(tile_size.y),
+                                tile_map[tile_id].split(sep)[-1].split(".")[0],
+                                tile_map[tile_id],
+                                self.game,
+                            )
+                        )
+
+        return Level(name, size, cell_size, tiles, entities)
+
+    def cache(self, lvl: Level):
+        data = []
+        for e in lvl.entitites:
+            data.append(e.to_json_object())
+        write_json(
+            self.LVL_PATH + sep + "cache" + sep + lvl.name + sep + "entities.json", data
+        )
