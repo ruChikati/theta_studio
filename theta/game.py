@@ -3,7 +3,7 @@ from time import time
 
 import pygame
 
-from . import animation, camera, input, level, sfx, ui
+from . import camera, gfx, input, level, sfx, ui
 
 CAMERA_PATH = f".{sep}data{sep}cutscenes{sep}"
 FONT_PATH = f".{sep}data{sep}fonts{sep}"
@@ -19,7 +19,7 @@ class Game:
         self.ui = ui.UIManager(self)
         self.input = input.Input()
         self.camera = camera.Camera(width, height)
-        self.anim = animation.AnimationManager()
+        self.anim = gfx.AnimationManager()
         self.world = level.LevelManager(self)
         self.sfx = sfx.SFXManager(sfx_channels)
 
@@ -30,9 +30,9 @@ class Game:
         self._t = 0
         self.events = []
 
-        self.entities = []
+        self.ua_entities = []
 
-    def update(self, full_screen=False):
+    def update(self, full_screen=True):
         self.dt = (time() - self._last_time) * self.fps
         self._last_time = time()
 
@@ -43,6 +43,9 @@ class Game:
                 m_clicked = True
 
         self.ui.update(self.camera.screen, self.input.m_pos, m_clicked)
+        self.world.update(self.dt)
+        for entity in self.ua_entities:
+            entity.update(self.dt)
         self.camera.update(full_screen)
 
         self.clock.tick(self.fps)

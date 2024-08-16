@@ -30,16 +30,32 @@ class VerletObject:
         self.accel = pygame.Vector2(0, 0)
 
     def accelerate(self, acc: pygame.Vector2, max_vel: float = float("inf")):
-        if (self.pos - self.prev_pos).magnitude_squared() <= max_vel**2:
+        if (
+            self.get_vel().magnitude_squared() <= max_vel**2
+            or self.get_vel().normalize().dot(acc.normalize()) <= 0.0
+        ):
             self.accel += acc
 
     def teleport(self, pos: pygame.Vector2, keep_vel: bool = False):
         self.prev_pos = self.prev_pos + (pos - self.pos) if keep_vel else pos
         self.pos = pos
 
+    def get_vel(self) -> pygame.Vector2:
+        return self.pos - self.prev_pos
+
 
 class Entity(VerletObject):
-    def __init__(self, x: int, y: int, w: int, h: int, name: str, game):
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        w: int,
+        h: int,
+        name: str,
+        game,
+        unattached=False,
+        real=True,
+    ):
         super().__init__(
             pygame.Vector2(x, y), pygame.Vector2(x, y), pygame.Vector2(0, 0), w, h
         )
@@ -49,18 +65,20 @@ class Entity(VerletObject):
         self.name = name
         self.action = "idle" if self.anims else None
         self.img = self.anims[self.action].get_img() if self.anims else None
+        self.is_real = real
+        if unattached:
+            self.game.ua_entities.append(self)
 
     def update(self, dt, decel: float = 0.1):
         old_rect = self.rect.copy()
         vel = self.pos - self.prev_pos
 
         # if self.accel == pygame.Vector2(0, 0):
-        self.accelerate(vel * -decel)
-
+        self.accel += vel * -decel
         self.prev_pos = self.pos.copy()
         self.pos += vel + self.accel * dt * dt
         self.rect.topleft = self.pos
-        self.game.camera.add_update_rect(self.rect.union(old_rect).inflate(3, 3))
+        self.game.camera.add_update_rect(self.rect.union(old_rect).inflate(1, 1))
 
         self.accel = pygame.Vector2(0, 0)
         if self.action is not None and self.img is not None:
@@ -74,11 +92,16 @@ class Entity(VerletObject):
             "action": self.action,
             "frame": self.anims[self.action].frame,
             "rect": [self.rect.x, self.rect.y, self.rect.w, self.rect.h],
+            "real": True,
         }
 
     @property
     def centre(self) -> pygame.Vector2:
         return self.pos + pygame.Vector2(self.w // 2, self.h // 2)
+
+    @property
+    def size(self) -> pygame.Vector2:
+        return pygame.Vector2(self.rect.w, self.rect.h)
 
 
 class SpriteStackEntity(VerletObject):

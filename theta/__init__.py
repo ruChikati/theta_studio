@@ -1,6 +1,7 @@
 from os import sep as _sep
 
-from . import animation, camera, game, input, level, particle, sfx, text, ui, utils
+from . import camera, game, gfx, input, level, particle, sfx, text, ui, utils
+from .entity import Entity, SpriteStackEntity
 from .game import Game
 
 

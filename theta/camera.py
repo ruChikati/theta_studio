@@ -61,8 +61,9 @@ class Camera:  # TODO: better camera (GMTK-recommended)
                 self.cutscenes[cutscene.name] = cutscene
 
     def update(self, full_screen=True):
-        self.display.fill(self._bgc)
-        self.screen.fill(self._bgc)
+        if full_screen:
+            self.screen.fill(self._bgc)
+
         if self.current_points is not None:
             try:
                 self.scroll = pygame.Vector2(next(self.current_points))
@@ -123,11 +124,6 @@ class Camera:  # TODO: better camera (GMTK-recommended)
         if not self._locked:
             if flt >= MIN_ZOOM:
                 self._zoom_inv = 1 / flt
-
-    def zoom_by(self, flt: float):
-        if not self._locked:
-            if not (flt < 0 and self._zoom_inv <= MIN_ZOOM):
-                self._zoom_inv += 1 / (1 / self._zoom_inv + flt)
 
     def get_zoom(self) -> float:
         return self._zoom_inv

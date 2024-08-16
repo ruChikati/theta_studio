@@ -11,7 +11,6 @@ class Animation:
         self.frame_paths = os.listdir(self.path)
         self.frame = 0
         self.frame_paths.sort()
-        self.rotation = 0
         self.paused = False
         try:
             self.config = read_json(f"{self.path}{os.sep}config.json")
@@ -21,7 +20,6 @@ class Animation:
                 "speed": 1.0,
                 "loop": False,
                 "offset": [0, 0],
-                "centre": False,
             }
             write_json(f"{self.path}{os.sep}config.json", self.config)
         self.frame_durations = sum_list(self.config["frames"])

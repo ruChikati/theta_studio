@@ -1,7 +1,7 @@
 import csv
 import xml.etree.ElementTree as ET
 from os import mkdir, sep
-from os.path import isdir
+from os.path import exists, isdir
 
 import pygame
 
@@ -29,6 +29,8 @@ class Tile:
         self.img_path = img_path
         self.img = pygame.image.load(f"data{sep}{img_path}").convert()
         self.game = game
+        self.pos = pygame.Vector2(x, y)
+        self.size = pygame.Vector2(self.rect.x, self.rect.y)
 
     def __eq__(self, other):
         return (self.rect.topleft, (self.rect.x, self.rect.y), self.name) == (
@@ -62,7 +64,7 @@ class Level:
         self.cell_size = cell_size
         self.name = name
 
-        self.entitites = entities
+        self.entities = entities
         self.tiles = tiles
 
         assert not (
@@ -72,7 +74,7 @@ class Level:
         self.objs = (tiles if tiles is not None else []) + (
             entities if entities is not None else []
         )
-        self.cells = [[]] * ((size.x // cell_size.x) * (size.y // cell_size.y))
+        self.cells = [[]] * int((size.x // cell_size.x) * (size.y // cell_size.y))
 
         for obj in self.objs:
             self.insert(obj)
@@ -89,6 +91,14 @@ class Level:
                 else:
                     obj.update()
 
+    def _handle_collisions(self, e: Entity):
+        if not e.is_real:
+            return
+        for i in self.fully_index(e):
+            for t in self.cells[i]:
+                if isinstance(t, Tile):
+                    pass
+
     def insert(self, obj: Tile | Entity):
         if obj not in self.cells[i := self.index(obj)]:
             self.cells[i].append(obj)
@@ -100,11 +110,20 @@ class Level:
         return self.index_at_pos(pygame.Vector2(obj.rect.center))
 
     def index_at_pos(self, pos: pygame.Vector2) -> int:
-        x = (pos.x - (pos.x % self.cell_size.x)) // self.cell_size.x
-        y = (pos.y - (pos.y % self.cell_size.y)) // self.cell_size.y
-        return x + (self.size.x // self.cell_size.x) * y
+        x = min(
+            (pos.x - (pos.x % self.cell_size.x)) // self.cell_size.x,
+            self.size.x // self.cell_size.x - 1,
+        )
+        y = min(
+            (pos.y - (pos.y % self.cell_size.y)) // self.cell_size.y,
+            self.size.y // self.cell_size.y - 1,
+        )
 
-    def fully_index(self, obj: Tile | Entity) -> list[int]:
+        return int(x + (self.size.x // self.cell_size.x - 1) * y)
+
+    def fully_index(
+        self, obj: Tile | Entity
+    ) -> list[int]:  # TODO: fix, dont assume there is always a cell at i-1, i+1, etc
         indices = [i := self.index(obj)]
         left = (
             obj.rect.centerx - (obj.rect.centerx % self.cell_size.x) + obj.rect.w // 2
@@ -145,19 +164,27 @@ class LevelManager:
         from .game import LVL_PATH
 
         self.LVL_PATH = LVL_PATH
-        mkdir(LVL_PATH + "caches")
+        if not exists(LVL_PATH + "caches"):
+            mkdir(LVL_PATH + "caches")
         self.current_lvl = None
         self.game = game
 
+        if not exists(LVL_PATH + "active"):
+            with open(LVL_PATH + "active", "w") as f:
+                f.write("0")
+        with open(LVL_PATH + "active", "r") as f:
+            self.switch_lvl(f.read())
+
     def update(self, dt: float):
-        if self.current_lvl is not None:
-            self.current_lvl.update(dt)
         for event in self.game.events:
             if event.type == SWITCH_LVL:
                 self.switch_lvl(event.name)
+        if self.current_lvl is not None:
+            self.current_lvl.update(dt)
 
     def switch_lvl(self, name: str):
-        self.cache(self.current_lvl)
+        if self.current_lvl is not None:
+            self.cache(self.current_lvl)
         self.current_lvl = self.load_lvl(name)
 
     def load_lvl(self, name: str) -> Level:
@@ -166,21 +193,32 @@ class LevelManager:
                 self.LVL_PATH + sep + "cache" + name + sep + "entities.json"
             )
         else:
-            entities = read_json(self.LVL_PATH + sep + name + sep + "entities.json")
+            entities = read_json(self.LVL_PATH + name + sep + "entities.json")
 
-        ts_data = ET.parse(self.LVL_PATH + sep + name + sep + "tileset.tsx")
-        map_data = ET.parse(self.LVL_PATH + sep + name + sep + "map.tmx")
+        for i, e in enumerate(entities):
+            entities[i] = Entity(*e["rect"], e["name"], self.game, real=e["real"])
 
+        if exists(self.LVL_PATH + name + sep + "no_tiles"):
+            return Level(
+                name,
+                pygame.Vector2(2048, 2048),
+                pygame.Vector2(1024, 1024),
+                [],
+                entities,
+            )
+
+        ts_data = ET.parse(self.LVL_PATH + name + sep + "tileset.tsx")
+        map_data = ET.parse(self.LVL_PATH + name + sep + "map.tmx")
         cell_size = pygame.Vector2(
-            int(map_data.getroot()[0][0].attrib["width"]),
-            int(map_data.getroot()[0][0].attrib["height"]),
+            int(map_data.getroot().attrib["width"]),
+            int(map_data.getroot().attrib["height"]),
         )
         size = cell_size.elementwise() * pygame.Vector2(
             int(map_data.getroot().attrib["tilewidth"]),
             int(map_data.getroot().attrib["tileheight"]),
         )
 
-        if map_data.getroot()[2][0].attrib["encoding"] != "csv":
+        if map_data.getroot()[1][0].attrib["encoding"] != "csv":
             raise FileTypeError(
                 "Data at"
                 + self.LVL_PATH
@@ -199,13 +237,13 @@ class LevelManager:
         for tile in ts_data.getroot():
             if tile.tag == "tile":
                 tile_map[tile.attrib["id"]] = tile[0].attrib["source"]
-
-        for chunk in map_data.getroot()[2][0]:
+        print(tile_map)
+        for chunk in map_data.getroot()[1][0]:
             tile_pos = list(csv.reader(chunk.text.split("\n")[1:-1]))
             chunk_pos = pygame.Vector2(int(chunk.attrib["x"]), int(chunk.attrib["y"]))
             for x, row in enumerate(tile_pos):
                 for y, tile_id in enumerate(row):
-                    if tile_id:
+                    if tile_id != "0" and tile_id:
                         tiles.append(
                             Tile(
                                 int((chunk_pos.x + x) * tile_size.x),
@@ -222,7 +260,7 @@ class LevelManager:
 
     def cache(self, lvl: Level):
         data = []
-        for e in lvl.entitites:
+        for e in lvl.entities:
             data.append(e.to_json_object())
         write_json(
             self.LVL_PATH + sep + "cache" + sep + lvl.name + sep + "entities.json", data
